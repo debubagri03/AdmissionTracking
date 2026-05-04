@@ -644,150 +644,51 @@ const Sheets = {
 // AUTH
 // ══════════════════════════════════════════════════
 async function initApp() {
-  try {
-    console.log('AdmissionTracker starting...');
-    console.log('Supabase URL:', CONFIG.SUPABASE_URL);
-
-    if (!CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.includes('YOUR_')) {
-      console.error('CONFIG not set — please fill in your Supabase URL and key');
-      showPage('login');
-      document.getElementById('global-loading').style.display = 'none';
-      return;
-    }
-
-    const { data, error } = await sb.auth.getSession();
-    if (error) {
-      console.error('Session error:', error.message);
-      showPage('login');
-      return;
-    }
-
-    const session = data?.session;
-    if (session?.user) {
-      console.log('Found session for:', session.user.email);
-      APP.user = session.user;
-      await loadProfile(session.user.id);
-    } else {
-      console.log('No session found — showing login');
-      showPage('login');
-    }
-  } catch (e) {
-    console.error('initApp crashed:', e.message);
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    APP.user = session.user;
+    await loadProfile(session.user.id);
+  } else {
     showPage('login');
-  } finally {
-    document.getElementById('global-loading').style.display = 'none';
   }
+  document.getElementById('global-loading').style.display = 'none';
 }
 
 async function loadProfile(authId) {
-  try {
-    console.log('Loading profile for auth_id:', authId);
-
-    const { data, error } = await sb
-      .from('users')
-      .select('*')
-      .eq('auth_id', authId)
-      .single();
-
-    if (error) {
-      console.error('Profile fetch error:', error.message, error.code);
-
-      if (error.code === 'PGRST116') {
-        console.error('No profile row found matching auth_id:', authId);
-        console.error('Fix: Go to Supabase Table Editor → users table → check auth_id column matches the UUID in Authentication → Users');
-      }
-
-      showPage('login');
-      return;
-    }
-
-    if (!data) {
-      console.error('Profile data is null for auth_id:', authId);
-      showPage('login');
-      return;
-    }
-
-    console.log('Profile loaded:', data.full_name, '| Role:', data.role);
-    APP.profile = data;
-
-    await sb.from('users').update({
-      last_login: new Date().toISOString(),
-      login_count: (data.login_count || 0) + 1
-    }).eq('auth_id', authId);
-
-    await sb.from('audit_logs').insert({
-      user_id: data.id,
-      user_name: data.full_name,
-      user_role: data.role,
-      action: 'LOGIN',
-      details: 'Logged in'
-    });
-
-    await loadSharedData();
-    showAppShell();
-
-  } catch (e) {
-    console.error('loadProfile crashed:', e.message);
-    showPage('login');
-  }
+  const { data, error } = await sb.from('users').select('*').eq('auth_id', authId).single();
+  if (error || !data) { showPage('login'); return; }
+  APP.profile = data;
+  await sb.from('users').update({ last_login: new Date().toISOString(), login_count: (data.login_count || 0) + 1 }).eq('auth_id', authId);
+  await sb.from('audit_logs').insert({ user_id: data.id, user_name: data.full_name, user_role: data.role, action: 'LOGIN', details: 'Logged in' });
+  await loadSharedData();
+  showAppShell();
 }
 
 async function loadSharedData() {
-  try {
-    // Load settings and users in parallel
-    const [sRes, uRes] = await Promise.all([
-      Sheets.getSettings(),
-      sb.from('users').select('*').order('full_name')
-    ]);
-
-    if (sRes.success) {
-      APP.settings = parseSettings(sRes.data);
-    } else {
-      APP.settings = {
-        areas: ['Patamata','Benz Circle','Governorpet','Labbipet','MG Road'],
-        sources: ['Walk-in','Referral','Coaching Center','School Event','Other'],
-        grades: ['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],
-        statuses: ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped']
-      };
-    }
-
-    if (!uRes.error && uRes.data) {
-      APP.allUsers = uRes.data;
-      APP.teachers = uRes.data.filter(u => u.role === 'teacher' && u.status === 'active');
-    } else {
-      APP.allUsers = [];
-      APP.teachers = [];
-    }
-
-    // Preload ALL leads once and cache them
-    console.log('Preloading all leads...');
-    const leadsRes = await Sheets.getLeads();
-    if (leadsRes.success) {
-      APP.leads = leadsRes.data;
-      APP.leadsCache = leadsRes.data;
-      APP.leadsCacheTime = Date.now();
-      console.log('Leads cached:', APP.leads.length, 'leads loaded');
-    } else {
-      APP.leads = [];
-      APP.leadsCache = [];
-      APP.leadsCacheTime = 0;
-    }
-
-  } catch (e) {
-    console.error('loadSharedData error:', e.message);
-    APP.settings = {
-      areas: ['Patamata','Benz Circle','Governorpet','Labbipet','MG Road'],
-      sources: ['Walk-in','Referral','Coaching Center','School Event','Other'],
-      grades: ['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],
-      statuses: ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped']
-    };
-    APP.allUsers = [];
-    APP.teachers = [];
-    APP.leads = [];
-    APP.leadsCache = [];
-    APP.leadsCacheTime = 0;
-  }
+  const [sRes, tRes] = await Promise.all([Sheets.getSettings(), sb.from('users').select('*').order('full_name')]);
+  if (sRes.success) APP.settings = parseSettings(sRes.data);
+  if (!tRes.error) APP.allUsers = tRes.data;
+  APP.teachers = APP.allUsers.filter(u => u.role === 'teacher' && u.status === 'active');
 }
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.classList.add('hidden');
+  if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.classList.remove('hidden'); return; }
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  btn.textContent = 'Sign In →'; btn.disabled = false;
+  if (error) { errEl.textContent = 'Invalid email or password. Please try again.'; errEl.classList.remove('hidden'); return; }
+  const { data: { user } } = await sb.auth.getUser();
+  APP.user = user;
+  document.getElementById('global-loading').style.display = 'flex';
+  await loadProfile(user.id);
+  document.getElementById('global-loading').style.display = 'none';
+}
+
 async function doForgotPassword() {
   const email = document.getElementById('forgot-email').value.trim().toLowerCase();
   const errEl = document.getElementById('forgot-error');
