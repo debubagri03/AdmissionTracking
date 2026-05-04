@@ -644,24 +644,92 @@ const Sheets = {
 // AUTH
 // ══════════════════════════════════════════════════
 async function initApp() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session?.user) {
-    APP.user = session.user;
-    await loadProfile(session.user.id);
-  } else {
+  try {
+    console.log('AdmissionTracker starting...');
+    console.log('Supabase URL:', CONFIG.SUPABASE_URL);
+
+    if (!CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL.includes('YOUR_')) {
+      console.error('CONFIG not set — please fill in your Supabase URL and key');
+      showPage('login');
+      document.getElementById('global-loading').style.display = 'none';
+      return;
+    }
+
+    const { data, error } = await sb.auth.getSession();
+    if (error) {
+      console.error('Session error:', error.message);
+      showPage('login');
+      return;
+    }
+
+    const session = data?.session;
+    if (session?.user) {
+      console.log('Found session for:', session.user.email);
+      APP.user = session.user;
+      await loadProfile(session.user.id);
+    } else {
+      console.log('No session found — showing login');
+      showPage('login');
+    }
+  } catch (e) {
+    console.error('initApp crashed:', e.message);
     showPage('login');
+  } finally {
+    document.getElementById('global-loading').style.display = 'none';
   }
-  document.getElementById('global-loading').style.display = 'none';
 }
 
 async function loadProfile(authId) {
-  const { data, error } = await sb.from('users').select('*').eq('auth_id', authId).single();
-  if (error || !data) { showPage('login'); return; }
-  APP.profile = data;
-  await sb.from('users').update({ last_login: new Date().toISOString(), login_count: (data.login_count || 0) + 1 }).eq('auth_id', authId);
-  await sb.from('audit_logs').insert({ user_id: data.id, user_name: data.full_name, user_role: data.role, action: 'LOGIN', details: 'Logged in' });
-  await loadSharedData();
-  showAppShell();
+  try {
+    console.log('Loading profile for auth_id:', authId);
+
+    const { data, error } = await sb
+      .from('users')
+      .select('*')
+      .eq('auth_id', authId)
+      .single();
+
+    if (error) {
+      console.error('Profile fetch error:', error.message, error.code);
+
+      if (error.code === 'PGRST116') {
+        console.error('No profile row found matching auth_id:', authId);
+        console.error('Fix: Go to Supabase Table Editor → users table → check auth_id column matches the UUID in Authentication → Users');
+      }
+
+      showPage('login');
+      return;
+    }
+
+    if (!data) {
+      console.error('Profile data is null for auth_id:', authId);
+      showPage('login');
+      return;
+    }
+
+    console.log('Profile loaded:', data.full_name, '| Role:', data.role);
+    APP.profile = data;
+
+    await sb.from('users').update({
+      last_login: new Date().toISOString(),
+      login_count: (data.login_count || 0) + 1
+    }).eq('auth_id', authId);
+
+    await sb.from('audit_logs').insert({
+      user_id: data.id,
+      user_name: data.full_name,
+      user_role: data.role,
+      action: 'LOGIN',
+      details: 'Logged in'
+    });
+
+    await loadSharedData();
+    showAppShell();
+
+  } catch (e) {
+    console.error('loadProfile crashed:', e.message);
+    showPage('login');
+  }
 }
 
 async function loadSharedData() {
