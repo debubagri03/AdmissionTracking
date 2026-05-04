@@ -733,30 +733,61 @@ async function loadProfile(authId) {
 }
 
 async function loadSharedData() {
-  const [sRes, tRes] = await Promise.all([Sheets.getSettings(), sb.from('users').select('*').order('full_name')]);
-  if (sRes.success) APP.settings = parseSettings(sRes.data);
-  if (!tRes.error) APP.allUsers = tRes.data;
-  APP.teachers = APP.allUsers.filter(u => u.role === 'teacher' && u.status === 'active');
-}
+  try {
+    // Load settings and users in parallel
+    const [sRes, uRes] = await Promise.all([
+      Sheets.getSettings(),
+      sb.from('users').select('*').order('full_name')
+    ]);
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const password = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-error');
-  const btn = document.getElementById('login-btn');
-  errEl.classList.add('hidden');
-  if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.classList.remove('hidden'); return; }
-  btn.textContent = 'Signing in...'; btn.disabled = true;
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  btn.textContent = 'Sign In →'; btn.disabled = false;
-  if (error) { errEl.textContent = 'Invalid email or password. Please try again.'; errEl.classList.remove('hidden'); return; }
-  const { data: { user } } = await sb.auth.getUser();
-  APP.user = user;
-  document.getElementById('global-loading').style.display = 'flex';
-  await loadProfile(user.id);
-  document.getElementById('global-loading').style.display = 'none';
-}
+    if (sRes.success) {
+      APP.settings = parseSettings(sRes.data);
+    } else {
+      APP.settings = {
+        areas: ['Patamata','Benz Circle','Governorpet','Labbipet','MG Road'],
+        sources: ['Walk-in','Referral','Coaching Center','School Event','Other'],
+        grades: ['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],
+        statuses: ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped']
+      };
+    }
 
+    if (!uRes.error && uRes.data) {
+      APP.allUsers = uRes.data;
+      APP.teachers = uRes.data.filter(u => u.role === 'teacher' && u.status === 'active');
+    } else {
+      APP.allUsers = [];
+      APP.teachers = [];
+    }
+
+    // Preload ALL leads once and cache them
+    console.log('Preloading all leads...');
+    const leadsRes = await Sheets.getLeads();
+    if (leadsRes.success) {
+      APP.leads = leadsRes.data;
+      APP.leadsCache = leadsRes.data;
+      APP.leadsCacheTime = Date.now();
+      console.log('Leads cached:', APP.leads.length, 'leads loaded');
+    } else {
+      APP.leads = [];
+      APP.leadsCache = [];
+      APP.leadsCacheTime = 0;
+    }
+
+  } catch (e) {
+    console.error('loadSharedData error:', e.message);
+    APP.settings = {
+      areas: ['Patamata','Benz Circle','Governorpet','Labbipet','MG Road'],
+      sources: ['Walk-in','Referral','Coaching Center','School Event','Other'],
+      grades: ['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],
+      statuses: ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped']
+    };
+    APP.allUsers = [];
+    APP.teachers = [];
+    APP.leads = [];
+    APP.leadsCache = [];
+    APP.leadsCacheTime = 0;
+  }
+}
 async function doForgotPassword() {
   const email = document.getElementById('forgot-email').value.trim().toLowerCase();
   const errEl = document.getElementById('forgot-error');
