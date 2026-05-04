@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdmissionTracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --orange: #f97316;
+  --orange-dark: #ea6c0a;
+  --orange-light: #fff7ed;
+  --gray-900: #111827;
+  --gray-800: #1f2937;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-500: #6b7280;
+  --gray-400: #9ca3af;
+  --gray-300: #d1d5db;
+  --gray-200: #e5e7eb;
+  --gray-100: #f3f4f6;
+  --gray-50: #f9fafb;
+  --green: #10b981;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+  --sidebar-w: 260px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--gray-50); color: var(--gray-900); font-size: 14px; }
+button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+input, select, textarea { font-family: inherit; outline: none; border: none; }
+
+/* ── TOAST ── */
+#toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; color: #fff; animation: slideIn .3s ease; max-width: 320px; box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+.toast.info { background: var(--blue); }
+@keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+
+/* ── LOADING ── */
+#global-loading { position:fixed; inset:0; background:#fff; display:flex; align-items:center; justify-content:center; z-index:9998; flex-direction:column; gap:12px; }
+.spinner { width:40px; height:40px; border:4px solid var(--gray-200); border-top-color:var(--orange); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── AUTH PAGES ── */
+.auth-bg { min-height:100vh; background:linear-gradient(135deg,#111827 0%,#1f2937 50%,#111827 100%); display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-card { background:#fff; border-radius:24px; padding:40px; width:100%; max-width:420px; box-shadow:0 32px 80px rgba(0,0,0,.3); }
+.auth-logo { text-align:center; margin-bottom:28px; }
+.auth-logo-icon { width:60px; height:60px; background:var(--orange); border-radius:16px; display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 24px rgba(249,115,22,.4); }
+.auth-logo-icon svg { width:32px; height:32px; fill:#fff; }
+.auth-brand { font-size:26px; font-weight:700; color:#fff; letter-spacing:-.5px; }
+.auth-sub { color:var(--gray-400); font-size:13px; margin-top:4px; }
+.auth-card h2 { font-size:20px; font-weight:700; margin-bottom:24px; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; font-size:12px; font-weight:600; color:var(--gray-600); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%; border:2px solid var(--gray-200); border-radius:12px;
+  padding:12px 16px; font-size:14px; transition:border-color .2s; background:#fff;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--orange); }
+.form-group .input-wrap { position:relative; }
+.form-group .eye-btn { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; color:var(--gray-400); padding:4px; }
+.btn-primary { width:100%; background:var(--orange); color:#fff; font-weight:700; font-size:14px; padding:14px; border-radius:12px; transition:background .2s, transform .1s; }
+.btn-primary:hover { background:var(--orange-dark); }
+.btn-primary:active { transform:scale(.98); }
+.btn-primary:disabled { background:var(--gray-300); cursor:not-allowed; }
+.auth-link { text-align:right; margin-bottom:16px; }
+.auth-link a { color:var(--orange); font-size:13px; font-weight:600; text-decoration:none; }
+.error-box { background:#fef2f2; border:1.5px solid #fecaca; color:#b91c1c; border-radius:10px; padding:10px 14px; font-size:13px; margin-bottom:16px; }
+.demo-box { background:var(--gray-50); border-radius:10px; padding:14px; margin-top:20px; font-size:12px; color:var(--gray-500); }
+.demo-box strong { display:block; color:var(--gray-600); margin-bottom:8px; font-size:12px; }
+.demo-box p { margin-bottom:4px; }
+.back-link { display:inline-flex; align-items:center; gap:6px; color:var(--gray-500); font-size:13px; font-weight:500; text-decoration:none; margin-bottom:20px; }
+.back-link:hover { color:var(--gray-800); }
+
+/* ── APP SHELL ── */
+#app-shell { display:flex; height:100vh; overflow:hidden; }
+#sidebar { width:var(--sidebar-w); background:var(--gray-900); color:#fff; display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto; z-index:100; transition:transform .3s; }
+#sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; }
+#main-content { flex:1; overflow-y:auto; min-width:0; }
+.mobile-header { display:none; background:#fff; border-bottom:1px solid var(--gray-200); padding:14px 16px; align-items:center; gap:12px; position:sticky; top:0; z-index:50; }
+.hamburger { background:none; padding:6px; color:var(--gray-600); }
+.page-content { padding:24px; max-width:1400px; }
+
+/* SIDEBAR */
+.sidebar-logo { padding:20px; border-bottom:1px solid var(--gray-800); display:flex; align-items:center; gap:12px; }
+.sidebar-logo-icon { width:36px; height:36px; background:var(--orange); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sidebar-logo-icon svg { width:20px; height:20px; fill:#fff; }
+.sidebar-brand { font-weight:700; font-size:15px; line-height:1.2; }
+.sidebar-brand span { color:var(--orange); display:block; }
+.sidebar-profile { padding:16px 20px; border-bottom:1px solid var(--gray-800); display:flex; align-items:center; gap:12px; }
+.sidebar-avatar { width:38px; height:38px; border-radius:50%; background:var(--orange); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; flex-shrink:0; }
+.sidebar-name { font-size:13px; font-weight:600; color:#fff; }
+.sidebar-role { font-size:11px; padding:2px 8px; border-radius:20px; display:inline-block; margin-top:3px; font-weight:600; }
+.role-admin { background:#fde8e8; color:#c53030; }
+.role-principal { background:#e8f0fe; color:#1a56db; }
+.role-teacher { background:#def7ec; color:#03543f; }
+.sidebar-areas { font-size:11px; color:var(--gray-500); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+.sidebar-nav { flex:1; padding:12px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; color:var(--gray-400); font-size:13px; font-weight:500; cursor:pointer; transition:all .2s; margin-bottom:2px; border:none; background:none; width:100%; text-align:left; }
+.nav-item:hover { background:var(--gray-800); color:#fff; }
+.nav-item.active { background:var(--orange); color:#fff; }
+.nav-item svg { width:16px; height:16px; flex-shrink:0; }
+.sidebar-footer { padding:12px; border-top:1px solid var(--gray-800); }
+.logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; color:var(--gray-400); font-size:13px; font-weight:500; cursor:pointer; background:none; border:none; width:100%; transition:all .2s; }
+.logout-btn:hover { background:#3f1e1e; color:#fca5a5; }
+.logout-btn svg { width:16px; height:16px; }
+
+/* ── COMMON ── */
+.page-header { margin-bottom:24px; }
+.page-header h1 { font-size:22px; font-weight:700; }
+.page-header p { color:var(--gray-500); font-size:13px; margin-top:4px; }
+.page-header-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px; }
+
+/* CARDS */
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }
+.stat-card { background:#fff; border-radius:16px; padding:18px; border:1px solid var(--gray-100); box-shadow:0 1px 4px rgba(0,0,0,.05); display:flex; align-items:flex-start; gap:14px; }
+.stat-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.stat-icon svg { width:20px; height:20px; }
+.stat-icon.orange { background:var(--orange-light); color:var(--orange); }
+.stat-icon.green { background:#ecfdf5; color:var(--green); }
+.stat-icon.blue { background:#eff6ff; color:var(--blue); }
+.stat-icon.purple { background:#f5f3ff; color:var(--purple); }
+.stat-icon.red { background:#fef2f2; color:var(--red); }
+.stat-icon.yellow { background:#fffbeb; color:var(--yellow); }
+.stat-label { font-size:11px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; }
+.stat-value { font-size:26px; font-weight:700; color:var(--gray-900); margin-top:2px; line-height:1; }
+.stat-sub { font-size:11px; color:var(--gray-400); margin-top:4px; }
+
+/* WHITE CARD */
+.card { background:#fff; border-radius:16px; border:1px solid var(--gray-100); box-shadow:0 1px 4px rgba(0,0,0,.05); padding:20px; margin-bottom:20px; }
+.card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.card-title { font-size:15px; font-weight:700; }
+.card-link { font-size:12px; color:var(--orange); font-weight:600; text-decoration:none; cursor:pointer; background:none; border:none; }
+
+/* TABLE */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead tr { background:var(--gray-50); border-bottom:1px solid var(--gray-100); }
+th { padding:10px 14px; text-align:left; font-size:11px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+td { padding:12px 14px; border-bottom:1px solid var(--gray-50); vertical-align:middle; white-space:nowrap; }
+tr:hover td { background:var(--gray-50); }
+tr:last-child td { border-bottom:none; }
+
+/* BADGES */
+.badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+.badge-inquiry { background:#f1f5f9; color:#475569; }
+.badge-interested { background:#fef9c3; color:#854d0e; }
+.badge-visit { background:#dbeafe; color:#1e40af; }
+.badge-application { background:#ede9fe; color:#5b21b6; }
+.badge-fee { background:#fce7f3; color:#9d174d; }
+.badge-admitted { background:#d1fae5; color:#065f46; }
+.badge-dropped { background:#fee2e2; color:#991b1b; }
+.role-badge-admin { background:#fde8e8; color:#c53030; }
+.role-badge-principal { background:#e8f0fe; color:#1a56db; }
+.role-badge-teacher { background:#def7ec; color:#03543f; }
+
+/* BUTTONS */
+.btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; }
+.btn-sm { padding:6px 12px; font-size:12px; border-radius:8px; }
+.btn-orange { background:var(--orange); color:#fff; }
+.btn-orange:hover { background:var(--orange-dark); }
+.btn-green { background:var(--green); color:#fff; }
+.btn-green:hover { background:#059669; }
+.btn-outline { background:#fff; color:var(--gray-700); border:1.5px solid var(--gray-200); }
+.btn-outline:hover { background:var(--gray-50); }
+.btn-red { background:var(--red); color:#fff; }
+.btn-red:hover { background:#dc2626; }
+.btn svg { width:15px; height:15px; }
+
+/* SEARCH/FILTER BAR */
+.filter-bar { background:#fff; border-radius:14px; border:1px solid var(--gray-100); box-shadow:0 1px 4px rgba(0,0,0,.05); padding:16px; margin-bottom:20px; }
+.filter-toggle { display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+.filter-toggle-label { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; }
+.filter-active-badge { background:var(--orange); color:#fff; font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; }
+.filter-body { display:none; border-top:1px solid var(--gray-100); margin-top:14px; padding-top:14px; }
+.filter-body.open { display:block; }
+.filter-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:14px; }
+.filter-grid label { display:block; font-size:11px; font-weight:600; color:var(--gray-500); margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px; }
+.filter-grid input, .filter-grid select {
+  width:100%; border:1.5px solid var(--gray-200); border-radius:9px;
+  padding:8px 12px; font-size:13px; background:#fff; font-family:inherit;
+}
+.filter-grid input:focus, .filter-grid select:focus { border-color:var(--orange); outline:none; }
+.filter-actions { display:flex; gap:8px; }
+
+/* ALERT BOXES */
+.alert { border-radius:14px; padding:16px; margin-bottom:16px; }
+.alert-red { background:#fef2f2; border:1.5px solid #fecaca; }
+.alert-yellow { background:#fffbeb; border:1.5px solid #fde68a; }
+.alert-blue { background:#eff6ff; border:1.5px solid #bfdbfe; }
+.alert-header { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:700; font-size:13px; }
+.alert-header svg { width:16px; height:16px; flex-shrink:0; }
+.alert-red .alert-header { color:#b91c1c; }
+.alert-yellow .alert-header { color:#92400e; }
+.alert-blue .alert-header { color:#1e40af; }
+
+/* QUICK LINKS */
+.quick-links { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:12px; margin-bottom:24px; }
+.quick-link { background:#fff; border:1.5px solid var(--gray-100); border-radius:14px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; transition:all .2s; text-align:center; }
+.quick-link:hover { border-color:var(--orange); box-shadow:0 4px 12px rgba(249,115,22,.1); transform:translateY(-2px); }
+.quick-link-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+.quick-link-icon svg { width:20px; height:20px; }
+.quick-link span { font-size:12px; font-weight:600; color:var(--gray-700); }
+
+/* MODAL/PANEL */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:500; display:none; }
+.overlay.open { display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal { background:#fff; border-radius:20px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 32px 80px rgba(0,0,0,.3); }
+.modal-header { padding:20px 24px; border-bottom:1px solid var(--gray-100); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#fff; z-index:1; }
+.modal-header h3 { font-size:16px; font-weight:700; }
+.modal-close { background:none; color:var(--gray-400); padding:6px; border-radius:8px; }
+.modal-close:hover { background:var(--gray-100); color:var(--gray-700); }
+.modal-body { padding:24px; }
+.modal-footer { padding:16px 24px; border-top:1px solid var(--gray-100); display:flex; gap:8px; justify-content:flex-end; }
+
+/* SIDE PANEL */
+.side-panel { position:fixed; top:0; right:0; width:100%; max-width:420px; height:100vh; background:#fff; z-index:600; transform:translateX(100%); transition:transform .3s; box-shadow:-8px 0 40px rgba(0,0,0,.15); display:flex; flex-direction:column; }
+.side-panel.open { transform:translateX(0); }
+.side-panel-header { padding:20px; border-bottom:1px solid var(--gray-100); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.side-panel-body { flex:1; overflow-y:auto; padding:20px; }
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.info-cell { background:var(--gray-50); border-radius:10px; padding:12px; }
+.info-cell-label { font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:.3px; margin-bottom:4px; }
+.info-cell-value { font-size:13px; font-weight:600; color:var(--gray-900); word-break:break-word; }
+.update-section { border-top:1px solid var(--gray-100); padding-top:16px; }
+.update-section-label { font-size:11px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
+
+/* CHARTS */
+.chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+.chart-container { position:relative; height:240px; }
+@media(max-width:768px) { .chart-grid { grid-template-columns:1fr; } }
+
+/* AREA CHECKBOX GRID */
+.area-checkbox-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-height:240px; overflow-y:auto; }
+.area-checkbox { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; border:2px solid var(--gray-200); cursor:pointer; transition:all .2s; }
+.area-checkbox.checked { border-color:var(--orange); background:var(--orange-light); }
+.area-checkbox input { display:none; }
+.area-check-box { width:16px; height:16px; border:2px solid var(--gray-300); border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.area-checkbox.checked .area-check-box { background:var(--orange); border-color:var(--orange); }
+.area-check-box svg { width:10px; height:10px; fill:#fff; display:none; }
+.area-checkbox.checked .area-check-box svg { display:block; }
+.area-checkbox span { font-size:13px; font-weight:500; color:var(--gray-700); }
+
+/* OVERDUE ROW */
+.overdue-row { background:#fff; border-radius:10px; padding:12px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; border:1px solid #fecaca; }
+
+/* PROGRESS BAR */
+.progress-bar { height:6px; background:var(--gray-100); border-radius:3px; overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; background:var(--orange); border-radius:3px; transition:width .6s ease; }
+
+/* RESPONSIVE */
+@media(max-width:768px) {
+  #sidebar { position:fixed; top:0; left:0; height:100%; transform:translateX(-100%); }
+  #sidebar.open { transform:translateX(0); }
+  #sidebar-overlay.open { display:block; }
+  .mobile-header { display:flex; }
+  .page-content { padding:16px; }
+  .stat-grid { grid-template-columns:1fr 1fr; }
+  .filter-grid { grid-template-columns:1fr 1fr; }
+  #main-content { padding-top:0; }
+}
+@media(max-width:480px) {
+  .stat-grid { grid-template-columns:1fr 1fr; }
+  .chart-grid { grid-template-columns:1fr; }
+}
+
+/* FORM SECTION HEADER */
+.form-section-header { font-size:11px; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:.7px; padding-bottom:10px; border-bottom:1px solid var(--gray-100); margin-bottom:16px; margin-top:8px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-row.full { grid-template-columns:1fr; }
+@media(max-width:600px) { .form-row { grid-template-columns:1fr; } }
+
+/* DUP WARNING */
+.dup-warn { background:#fffbeb; border:1.5px solid #fde68a; border-radius:12px; padding:14px; margin-bottom:16px; display:flex; gap:10px; font-size:13px; }
+.dup-warn svg { width:18px; height:18px; fill:#d97706; flex-shrink:0; margin-top:1px; }
+
+/* TOP 3 */
+.top3-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+@media(max-width:600px) { .top3-grid { grid-template-columns:1fr; } }
+.top3-card { background:#fff; border-radius:14px; border:1px solid var(--gray-100); padding:16px; text-align:center; }
+.top3-medal { font-size:28px; margin-bottom:6px; }
+.top3-name { font-weight:700; font-size:14px; color:var(--gray-900); }
+.top3-areas { font-size:11px; color:var(--gray-400); margin-bottom:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.top3-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.top3-stat { background:var(--gray-50); border-radius:8px; padding:6px 4px; }
+.top3-stat-val { font-size:16px; font-weight:700; }
+.top3-stat-label { font-size:10px; color:var(--gray-500); }
+
+/* SUCCESS PAGE */
+.success-icon { width:64px; height:64px; background:#d1fae5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+.success-icon svg { width:32px; height:32px; fill:var(--green); }
+
+/* MINI RATE BADGE */
+.rate-high { color:var(--green); font-weight:700; }
+.rate-mid { color:var(--yellow); font-weight:700; }
+.rate-low { color:var(--red); font-weight:700; }
+
+/* SETTINGS CHIP */
+.setting-chips { display:flex; flex-wrap:wrap; gap:8px; min-height:48px; }
+.setting-chip { display:inline-flex; align-items:center; gap:6px; background:var(--gray-100); color:var(--gray-700); padding:6px 12px; border-radius:20px; font-size:12px; font-weight:500; }
+.setting-chip button { background:none; color:var(--gray-400); padding:0 2px; font-size:16px; line-height:1; }
+.setting-chip button:hover { color:var(--red); }
+
+/* HIDDEN CLASS */
+.hidden { display:none !important; }
+
+/* AUDIT CHIP */
+.audit-chip { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.audit-LOGIN { background:#d1fae5; color:#065f46; }
+.audit-LOGOUT { background:var(--gray-100); color:var(--gray-600); }
+.audit-PASSWORD_RESET { background:#fff7ed; color:#c2410c; }
+.audit-ACCOUNT_DISABLED { background:#fee2e2; color:#991b1b; }
+.audit-ACCOUNT_ACTIVE { background:#d1fae5; color:#065f46; }
+.audit-UPDATE_AREAS { background:#dbeafe; color:#1e40af; }
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div id="global-loading">
+  <div class="spinner"></div>
+  <p style="color:#6b7280;font-size:13px;font-weight:500">Loading AdmissionTracker...</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     AUTH PAGES
+══════════════════════════════════════════════════ -->
+
+<div id="page-login" class="hidden auth-bg">
+  <div>
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+      <div class="auth-brand">AdmissionTracker</div>
+      <div class="auth-sub">School Admission Lead Management</div>
+    </div>
+    <div class="auth-card">
+      <h2>Sign in to your account</h2>
+      <div id="login-error" class="error-box hidden"></div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@school.in">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrap">
+          <input type="password" id="login-password" placeholder="Enter your password">
+          <button class="eye-btn" onclick="togglePassword('login-password',this)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="auth-link"><a href="#" onclick="showPage('forgot')">Forgot password?</a></div>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="demo-box">
+        <strong>Demo Credentials</strong>
+        <p>🔴 Admin: admin@admissiontracker.in / Admin@2026!</p>
+        <p>🔵 Principal: principal@admissiontracker.in / Principal@2026!</p>
+        <p>🟢 Teacher: ramesh@admissiontracker.in / Teacher@2026!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-forgot" class="hidden auth-bg">
+  <div>
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+      <div class="auth-brand">AdmissionTracker</div>
+    </div>
+    <div class="auth-card">
+      <a class="back-link" href="#" onclick="showPage('login')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to login
+      </a>
+      <div id="forgot-success" class="hidden" style="text-align:center;padding:20px 0">
+        <div class="success-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+        <h3 style="font-weight:700;margin-bottom:8px">Check your email</h3>
+        <p style="color:#6b7280;font-size:13px">We sent a password reset link to <strong id="forgot-email-display"></strong></p>
+        <a href="#" onclick="showPage('login')" style="display:inline-block;margin-top:16px;color:var(--orange);font-weight:600;font-size:13px;text-decoration:none">Back to Login</a>
+      </div>
+      <div id="forgot-form">
+        <h2>Reset Password</h2>
+        <p style="color:#6b7280;font-size:13px;margin-bottom:20px">Enter your email and we'll send a reset link.</p>
+        <div id="forgot-error" class="error-box hidden"></div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="forgot-email" placeholder="you@school.in">
+        </div>
+        <button class="btn-primary" id="forgot-btn" onclick="doForgotPassword()">Send Reset Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════════ -->
+
+<div id="app-shell" class="hidden">
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+      <div class="sidebar-brand">Admission<span>Tracker</span></div>
+    </div>
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar" id="sb-avatar">A</div>
+      <div>
+        <div class="sidebar-name" id="sb-name">User</div>
+        <span class="sidebar-role" id="sb-role-badge">role</span>
+        <div class="sidebar-areas" id="sb-areas"></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <div id="main-content">
+    <div class="mobile-header">
+      <button class="hamburger" onclick="openSidebar()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="white"/></svg>
+        </div>
+        <span style="font-weight:700;font-size:14px">AdmissionTracker</span>
+      </div>
+    </div>
+
+    <!-- All pages rendered here -->
+    <div id="pages-container" class="page-content"></div>
+  </div>
+</div>
+
+<!-- SIDE PANEL FOR LEAD DETAIL -->
+<div id="lead-panel-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:599;display:none" onclick="closeLeadPanel()"></div>
+<div class="side-panel" id="lead-panel">
+  <div class="side-panel-header">
+    <div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gray-500)" id="panel-lead-id"></div>
+      <div id="panel-status-badge" style="margin-top:4px"></div>
+    </div>
+    <button class="modal-close" onclick="closeLeadPanel()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="side-panel-body" id="panel-body"></div>
+</div>
+
+<!-- AREA ASSIGNMENT MODAL -->
+<div class="overlay" id="area-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3>Assign Areas</h3>
+        <p style="font-size:12px;color:var(--gray-500);margin-top:2px" id="area-modal-teacher-name"></p>
+      </div>
+      <button class="modal-close" onclick="closeAreaModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--gray-500);margin-bottom:14px">Select all areas this teacher will cover:</p>
+      <div class="area-checkbox-grid" id="area-checkbox-grid"></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--orange);font-weight:600" id="area-selected-display"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAreaModal()">Cancel</button>
+      <button class="btn btn-orange" onclick="saveAreas()">Save Areas</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// CONFIG — Replace with your actual values
+// ══════════════════════════════════════════════════
+const CONFIG = {
+  SUPABASE_URL: 'https://krfqpcgdoungwoszitoi.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtyZnFwY2dkb3VuZ3dvc3ppdG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NzIyMzYsImV4cCI6MjA5MzQ0ODIzNn0.iffdi-7C3iRe3IBM9-0DAtu2vjOxRYvjnc63Z16c5kY',
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx0JPgn_w3JCfY1-EjTDU_OfPwEnLc2OKsGejBwsryqAE5oFZg990I2NZGqzyJtGNFD/exec'
+};
+
+// ══════════════════════════════════════════════════
+// GLOBALS
+// ══════════════════════════════════════════════════
+const { createClient } = supabase;
+const sb = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+const APP = {
+  user: null,
+  profile: null,
+  settings: null,
+  leads: [],
+  teachers: [],
+  allUsers: [],
+  currentPage: null,
+  charts: {},
+  editingAreaUserId: null,
+  editingAreaSelectedAreas: [],
+  panelLead: null,
+  filters: {}
+};
+
+// ══════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════
+function toast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; t.style.transition = '.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function fmtDate(s) {
+  if (!s || s === '') return '—';
+  try { return new Date(s).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  catch { return s; }
+}
+function fmtDT(s) {
+  if (!s || s === '') return '—';
+  try { return new Date(s).toLocaleString('en-IN'); }
+  catch { return s; }
+}
+function isOverdue(d) {
+  if (!d || d === '') return false;
+  return new Date(d) < new Date(new Date().toDateString());
+}
+function today() { return new Date().toISOString().split('T')[0]; }
+function calcRate(total, admitted) {
+  if (!total || total === 0) return 0;
+  return Math.round((admitted / total) * 100);
+}
+function parseAreas(s) {
+  if (!s || s === 'All Areas' || s === '') return [];
+  return s.split(',').map(a => a.trim()).filter(Boolean);
+}
+function parseSettings(raw) {
+  const r = {};
+  Object.entries(raw).forEach(([k, v]) => {
+    if (typeof v === 'string' && v.includes(',')) r[k] = v.split(',').map(x => x.trim()).filter(Boolean);
+    else r[k] = v;
+  });
+  return r;
+}
+function groupBy(arr, key) {
+  return arr.reduce((acc, item) => {
+    const g = item[key] || 'Unknown';
+    if (!acc[g]) acc[g] = [];
+    acc[g].push(item);
+    return acc;
+  }, {});
+}
+function statusBadge(s) {
+  const map = {
+    'Inquiry': 'badge-inquiry', 'Interested': 'badge-interested',
+    'Visit Scheduled': 'badge-visit', 'Application': 'badge-application',
+    'Fee Paid': 'badge-fee', 'Admitted': 'badge-admitted', 'Dropped': 'badge-dropped'
+  };
+  return `<span class="badge ${map[s] || 'badge-inquiry'}">${s || '—'}</span>`;
+}
+function statusColor(s) {
+  const m = { 'Inquiry':'#94a3b8','Interested':'#fbbf24','Visit Scheduled':'#60a5fa','Application':'#a78bfa','Fee Paid':'#f472b6','Admitted':'#34d399','Dropped':'#f87171' };
+  return m[s] || '#94a3b8';
+}
+function rateClass(r) {
+  if (r >= 30) return 'rate-high';
+  if (r >= 15) return 'rate-mid';
+  return 'rate-low';
+}
+function svg(name) {
+  const icons = {
+    home: '<path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+    plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+    chart: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+    users: '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+    map: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+    filter: '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+    file: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
+    clipboard: '<path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+    alert: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    trophy: '<path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/>',
+    download: '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
+    lock: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+    toggle: '<rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="16" cy="12" r="3"/>'
+  };
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icons[name] || ''}</svg>`;
+}
+function togglePassword(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+// ══════════════════════════════════════════════════
+// SHEETS API
+// ══════════════════════════════════════════════════
+async function sheetsCall(action, params = {}, body = null) {
+  try {
+    const url = new URL(CONFIG.APPS_SCRIPT_URL);
+    url.searchParams.set('action', action);
+    Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v)); });
+    const opts = body ? { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) } : { method: 'GET' };
+    const res = await fetch(url.toString(), opts);
+    return await res.json();
+  } catch (e) { return { success: false, error: e.message }; }
+}
+const Sheets = {
+  getLeads: (f = {}) => sheetsCall('getLeads', f),
+  addLead: (d) => sheetsCall('addLead', {}, d),
+  updateLead: (d) => sheetsCall('updateLead', {}, d),
+  checkDuplicate: (phone) => sheetsCall('checkDuplicate', { phone }),
+  getSettings: () => sheetsCall('getSettings'),
+  updateSettings: (k, v) => sheetsCall('updateSettings', {}, { key: k, value: v }),
+  addHistory: (d) => sheetsCall('addHistory', {}, d),
+  getHistory: (id) => sheetsCall('getHistory', { lead_id: id }),
+  getNextLeadId: () => sheetsCall('getNextLeadId'),
+};
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+async function initApp() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    APP.user = session.user;
+    await loadProfile(session.user.id);
+  } else {
+    showPage('login');
+  }
+  document.getElementById('global-loading').style.display = 'none';
+}
+
+async function loadProfile(authId) {
+  const { data, error } = await sb.from('users').select('*').eq('auth_id', authId).single();
+  if (error || !data) { showPage('login'); return; }
+  APP.profile = data;
+  await sb.from('users').update({ last_login: new Date().toISOString(), login_count: (data.login_count || 0) + 1 }).eq('auth_id', authId);
+  await sb.from('audit_logs').insert({ user_id: data.id, user_name: data.full_name, user_role: data.role, action: 'LOGIN', details: 'Logged in' });
+  await loadSharedData();
+  showAppShell();
+}
+
+async function loadSharedData() {
+  const [sRes, tRes] = await Promise.all([Sheets.getSettings(), sb.from('users').select('*').order('full_name')]);
+  if (sRes.success) APP.settings = parseSettings(sRes.data);
+  if (!tRes.error) APP.allUsers = tRes.data;
+  APP.teachers = APP.allUsers.filter(u => u.role === 'teacher' && u.status === 'active');
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.classList.add('hidden');
+  if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.classList.remove('hidden'); return; }
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  btn.textContent = 'Sign In →'; btn.disabled = false;
+  if (error) { errEl.textContent = 'Invalid email or password. Please try again.'; errEl.classList.remove('hidden'); return; }
+  const { data: { user } } = await sb.auth.getUser();
+  APP.user = user;
+  document.getElementById('global-loading').style.display = 'flex';
+  await loadProfile(user.id);
+  document.getElementById('global-loading').style.display = 'none';
+}
+
+async function doForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+  const errEl = document.getElementById('forgot-error');
+  const btn = document.getElementById('forgot-btn');
+  errEl.classList.add('hidden');
+  if (!email) { errEl.textContent = 'Please enter your email.'; errEl.classList.remove('hidden'); return; }
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  btn.textContent = 'Send Reset Link'; btn.disabled = false;
+  if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
+  document.getElementById('forgot-email-display').textContent = email;
+  document.getElementById('forgot-form').classList.add('hidden');
+  document.getElementById('forgot-success').classList.remove('hidden');
+}
+
+async function doLogout() {
+  if (APP.profile) {
+    await sb.from('audit_logs').insert({ user_id: APP.profile.id, user_name: APP.profile.full_name, user_role: APP.profile.role, action: 'LOGOUT', details: 'Logged out' });
+  }
+  await sb.auth.signOut();
+  APP.user = null; APP.profile = null; APP.leads = []; APP.charts = {};
+  showPage('login');
+}
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+function showPage(page) {
+  ['login', 'forgot'].forEach(p => document.getElementById(`page-${p}`).classList.add('hidden'));
+  document.getElementById('app-shell').classList.add('hidden');
+  if (page === 'login') document.getElementById('page-login').classList.remove('hidden');
+  else if (page === 'forgot') document.getElementById('page-forgot').classList.remove('hidden');
+}
+
+function showAppShell() {
+  document.getElementById('page-login').classList.add('hidden');
+  document.getElementById('page-forgot').classList.add('hidden');
+  document.getElementById('app-shell').classList.remove('hidden');
+  buildSidebar();
+  const defaultPage = APP.profile.role === 'teacher' ? 'teacher-home' : APP.profile.role === 'principal' ? 'principal-home' : 'admin-home';
+  navigate(defaultPage);
+}
+
+function buildSidebar() {
+  const p = APP.profile;
+  document.getElementById('sb-avatar').textContent = p.full_name?.charAt(0)?.toUpperCase() || 'U';
+  document.getElementById('sb-name').textContent = p.full_name;
+  const rb = document.getElementById('sb-role-badge');
+  rb.textContent = p.role; rb.className = `sidebar-role role-${p.role}`;
+  const areasEl = document.getElementById('sb-areas');
+  if (p.role === 'teacher' && p.areas && p.areas !== 'All Areas') {
+    areasEl.textContent = '📍 ' + p.areas; areasEl.style.display = 'block';
+  } else areasEl.style.display = 'none';
+
+  const teacherLinks = [
+    { id: 'teacher-home', icon: 'home', label: 'Home' },
+    { id: 'submit-lead', icon: 'plus', label: 'Submit Lead' },
+    { id: 'my-leads', icon: 'list', label: 'My Leads' },
+    { id: 'my-performance', icon: 'chart', label: 'My Performance' },
+  ];
+  const principalLinks = [
+    { id: 'principal-home', icon: 'home', label: 'Home' },
+    { id: 'overview', icon: 'chart', label: 'Overview' },
+    { id: 'teacher-performance', icon: 'users', label: 'Teacher Performance' },
+    { id: 'area-analysis', icon: 'map', label: 'Area Analysis' },
+    { id: 'funnel', icon: 'filter', label: 'Funnel View' },
+    { id: 'all-leads', icon: 'list', label: 'All Leads' },
+    { id: 'reports', icon: 'file', label: 'Reports' },
+    { id: 'user-management', icon: 'users', label: 'Manage Users' },
+  ];
+  const adminLinks = [
+    { id: 'admin-home', icon: 'home', label: 'Home' },
+    { id: 'overview', icon: 'chart', label: 'Overview' },
+    { id: 'teacher-performance', icon: 'users', label: 'Teacher Performance' },
+    { id: 'area-analysis', icon: 'map', label: 'Area Analysis' },
+    { id: 'funnel', icon: 'filter', label: 'Funnel View' },
+    { id: 'all-leads', icon: 'list', label: 'All Leads' },
+    { id: 'reports', icon: 'file', label: 'Reports' },
+    { id: 'user-management', icon: 'users', label: 'User Management' },
+    { id: 'audit-logs', icon: 'clipboard', label: 'Audit Logs' },
+    { id: 'system-settings', icon: 'settings', label: 'System Settings' },
+  ];
+  const links = p.role === 'teacher' ? teacherLinks : p.role === 'principal' ? principalLinks : adminLinks;
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = links.map(l => `
+    <button class="nav-item" id="nav-${l.id}" onclick="navigate('${l.id}')">
+      ${svg(l.icon)} ${l.label}
+    </button>
+  `).join('');
+}
+
+async function navigate(page) {
+  // Destroy old charts
+  Object.values(APP.charts).forEach(c => { try { c.destroy(); } catch {} });
+  APP.charts = {};
+  APP.currentPage = page;
+  // Update active nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const active = document.getElementById(`nav-${page}`);
+  if (active) active.classList.add('active');
+  // Close sidebar on mobile
+  closeSidebar();
+  // Render page
+  const c = document.getElementById('pages-container');
+  c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--gray-400)"><div class="spinner" style="margin:0 auto"></div></div>';
+  await renderPage(page, c);
+}
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════
+// PAGE RENDERER
+// ══════════════════════════════════════════════════
+async function renderPage(page, container) {
+  switch(page) {
+    case 'teacher-home': await renderTeacherHome(container); break;
+    case 'submit-lead': await renderSubmitLead(container); break;
+    case 'my-leads': await renderMyLeads(container); break;
+    case 'my-performance': await renderMyPerformance(container); break;
+    case 'principal-home': case 'admin-home': await renderPrincipalHome(container); break;
+    case 'overview': await renderOverview(container); break;
+    case 'teacher-performance': await renderTeacherPerformance(container); break;
+    case 'area-analysis': await renderAreaAnalysis(container); break;
+    case 'funnel': await renderFunnel(container); break;
+    case 'all-leads': await renderAllLeads(container); break;
+    case 'reports': await renderReports(container); break;
+    case 'user-management': await renderUserManagement(container); break;
+    case 'audit-logs': await renderAuditLogs(container); break;
+    case 'system-settings': await renderSystemSettings(container); break;
+    default: container.innerHTML = '<p style="padding:40px;color:var(--gray-400)">Page not found</p>';
+  }
+}
+
+// ══════════════════════════════════════════════════
+// TEACHER HOME
+// ══════════════════════════════════════════════════
+async function renderTeacherHome(c) {
+  const res = await Sheets.getLeads({ teacher_id: APP.profile.id });
+  const leads = res.success ? res.data : [];
+  APP.leads = leads;
+  const admitted = leads.filter(l => l.status === 'Admitted').length;
+  const rate = calcRate(leads.length, admitted);
+  const todayFollowups = leads.filter(l => l.follow_up_date === today());
+  const overdue = leads.filter(l => isOverdue(l.follow_up_date) && !['Admitted','Dropped'].includes(l.status));
+  const recent = [...leads].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
+
+  c.innerHTML = `
+    <div class="page-header-row">
+      <div><h1 style="font-size:22px;font-weight:700">Good morning, ${APP.profile.full_name.split(' ')[0]} 👋</h1>
+        <p style="color:var(--gray-500);font-size:13px;margin-top:4px">${APP.profile.areas && APP.profile.areas !== 'All Areas' ? 'Assigned: ' + APP.profile.areas : "Ready to capture today's leads?"}</p>
+      </div>
+      <button class="btn btn-orange" onclick="navigate('submit-lead')">${svg('plus')} New Lead</button>
+    </div>
+
+    <div class="stat-grid">
+      ${statCard('Leads This Month', leads.length, 'users', 'blue')}
+      ${statCard('Total Admitted', admitted, 'trophy', 'green')}
+      ${statCard('Conversion Rate', rate + '%', 'chart', 'orange')}
+      ${statCard('Overdue Follow-ups', overdue.length, 'clock', overdue.length > 0 ? 'red' : 'purple')}
+    </div>
+
+    ${overdue.length > 0 ? `
+      <div class="alert alert-red" style="margin-bottom:20px">
+        <div class="alert-header">${svg('alert')} Overdue Follow-ups (${overdue.length})</div>
+        ${overdue.slice(0,3).map(l => `
+          <div class="overdue-row">
+            <div><div style="font-weight:600;font-size:13px">${l.student_name}</div><div style="font-size:11px;color:var(--gray-500)">${l.parent_name} · ${l.area}</div></div>
+            <div style="text-align:right">${statusBadge(l.status)}<div style="font-size:11px;color:var(--red);margin-top:4px">Due: ${fmtDate(l.follow_up_date)}</div></div>
+          </div>`).join('')}
+      </div>` : ''}
+
+    ${todayFollowups.length > 0 ? `
+      <div class="card">
+        <div class="card-header"><div class="card-title">${svg('clock')} Today's Follow-ups (${todayFollowups.length})</div></div>
+        ${todayFollowups.map(l => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50)">
+            <div><div style="font-weight:600;font-size:13px">${l.student_name}</div><div style="font-size:11px;color:var(--gray-500)">${l.parent_phone} · ${l.area}</div></div>
+            ${statusBadge(l.status)}
+          </div>`).join('')}
+      </div>` : ''}
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Recent Submissions</div>
+        <button class="card-link" onclick="navigate('my-leads')">View all</button>
+      </div>
+      ${recent.length === 0 ? `<div style="text-align:center;padding:30px;color:var(--gray-400)"><p style="margin-bottom:12px">No leads yet</p><button class="btn btn-orange btn-sm" onclick="navigate('submit-lead')">Submit First Lead</button></div>` :
+      recent.map(l => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50)">
+          <div class="min-w-0" style="min-width:0;flex:1">
+            <div style="font-weight:600;font-size:13px">${l.student_name}</div>
+            <div style="font-size:11px;color:var(--gray-500)">${l.parent_name} · ${l.area} · ${fmtDate(l.date)}</div>
+          </div>
+          ${statusBadge(l.status)}
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+function statCard(title, value, icon, color) {
+  return `<div class="stat-card">
+    <div class="stat-icon ${color}">${svg(icon)}</div>
+    <div><div class="stat-label">${title}</div><div class="stat-value">${value}</div></div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════
+// SUBMIT LEAD
+// ══════════════════════════════════════════════════
+async function renderSubmitLead(c) {
+  const settings = APP.settings || {};
+  const teacherAreas = APP.profile.areas === 'All Areas' || !APP.profile.areas
+    ? (settings.areas || [])
+    : parseAreas(APP.profile.areas);
+  const defaultArea = teacherAreas.length === 1 ? teacherAreas[0] : '';
+
+  c.innerHTML = `
+    <div class="page-header"><h1>Submit New Lead</h1><p>Fill in the student and parent details below</p></div>
+
+    <div id="dup-warning" class="dup-warn hidden">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div><strong style="display:block;margin-bottom:4px">Duplicate Phone Number Detected</strong><span id="dup-msg"></span></div>
+    </div>
+
+    <div class="card">
+      <div class="form-section-header">Student Details</div>
+      <div class="form-row">
+        <div class="form-group"><label>Student Name *</label><input type="text" id="f-student" placeholder="Full name"></div>
+        <div class="form-group"><label>Grade *</label>
+          <select id="f-grade"><option value="">Select grade...</option>${(settings.grades||[]).map(g=>`<option>${g}</option>`).join('')}</select>
+        </div>
+      </div>
+      <div class="form-group"><label>Current School</label><input type="text" id="f-school" placeholder="Student's current school"></div>
+
+      <div class="form-section-header">Parent Details</div>
+      <div class="form-row">
+        <div class="form-group"><label>Parent Name *</label><input type="text" id="f-parent" placeholder="Father or mother name"></div>
+        <div class="form-group"><label>Parent Phone * <span id="phone-status" style="font-size:11px;font-weight:600;margin-left:6px"></span></label>
+          <input type="tel" id="f-phone" placeholder="10-digit number" maxlength="10" oninput="onPhoneInput(this.value)">
+        </div>
+      </div>
+      <div class="form-group"><label>Alternative Phone</label><input type="tel" id="f-alt" placeholder="Optional" maxlength="10"></div>
+
+      <div class="form-section-header">Lead Details</div>
+      <div class="form-row">
+        <div class="form-group"><label>Area *</label>
+          <select id="f-area"><option value="">Select area visited...</option>${teacherAreas.map(a=>`<option value="${a}" ${a===defaultArea?'selected':''}>${a}</option>`).join('')}</select>
+          ${APP.profile.areas && APP.profile.areas !== 'All Areas' ? `<div style="font-size:11px;color:var(--gray-400);margin-top:4px">Assigned: ${APP.profile.areas}</div>` : ''}
+        </div>
+        <div class="form-group"><label>Source *</label>
+          <select id="f-source"><option value="">How did you meet them?</option>${(settings.sources||[]).map(s=>`<option>${s}</option>`).join('')}</select>
+        </div>
+      </div>
+      <div class="form-group"><label>Next Follow-up Date</label><input type="date" id="f-followup" min="${today()}"></div>
+      <div class="form-group"><label>Remarks</label><textarea id="f-remarks" rows="3" placeholder="Notes about the conversation..." style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px;resize:none;font-family:inherit"></textarea></div>
+
+      <div style="background:var(--gray-50);border-radius:10px;padding:12px;font-size:12px;color:var(--gray-500);margin-bottom:16px">
+        <strong>Auto-captured:</strong> Your name, ID, submission timestamp, Lead ID · <strong>Initial Status:</strong> Inquiry
+      </div>
+      <button class="btn btn-orange" style="width:100%;padding:14px;font-size:14px" onclick="submitLead()" id="submit-btn">${svg('plus')} Submit Lead</button>
+    </div>
+  `;
+}
+
+let phoneCheckTimeout;
+async function onPhoneInput(val) {
+  clearTimeout(phoneCheckTimeout);
+  const statusEl = document.getElementById('phone-status');
+  const dupEl = document.getElementById('dup-warning');
+  if (!statusEl) return;
+  const clean = val.replace(/\D/g, '');
+  if (clean.length < 10) { statusEl.textContent = ''; dupEl.classList.add('hidden'); return; }
+  statusEl.textContent = 'Checking...'; statusEl.style.color = 'var(--blue)';
+  phoneCheckTimeout = setTimeout(async () => {
+    const res = await Sheets.checkDuplicate(clean);
+    if (res.success && res.duplicate) {
+      statusEl.textContent = '⚠ Duplicate'; statusEl.style.color = 'var(--yellow)';
+      document.getElementById('dup-msg').textContent = `Already submitted by ${res.existing_lead.teacher_name} on ${res.existing_lead.date} for ${res.existing_lead.student_name} (${res.existing_lead.status}).`;
+      dupEl.classList.remove('hidden');
+    } else {
+      statusEl.textContent = '✓ Unique'; statusEl.style.color = 'var(--green)';
+      dupEl.classList.add('hidden');
+    }
+  }, 600);
+}
+
+async function submitLead() {
+  const g = (id) => document.getElementById(id);
+  const student = g('f-student')?.value?.trim();
+  const parent = g('f-parent')?.value?.trim();
+  const phone = g('f-phone')?.value?.replace(/\D/g,'');
+  const area = g('f-area')?.value;
+  const source = g('f-source')?.value;
+  if (!student) { toast('Student name is required', 'error'); return; }
+  if (!parent) { toast('Parent name is required', 'error'); return; }
+  if (!phone || phone.length < 10) { toast('Valid 10-digit phone is required', 'error'); return; }
+  if (!area) { toast('Please select an area', 'error'); return; }
+  if (!source) { toast('Please select a source', 'error'); return; }
+  const btn = g('submit-btn'); btn.textContent = 'Submitting...'; btn.disabled = true;
+  const nextRes = await Sheets.getNextLeadId();
+  const leadId = nextRes.success ? nextRes.next_id : `AT-${Date.now()}`;
+  const lead = {
+    lead_id: leadId, date: new Date().toLocaleDateString('en-IN'),
+    teacher_id: APP.profile.id, teacher_name: APP.profile.full_name,
+    student_name: student, parent_name: parent, parent_phone: phone,
+    alt_phone: g('f-alt')?.value || '', grade: g('f-grade')?.value || '',
+    current_school: g('f-school')?.value || '', area, source,
+    status: 'Inquiry', remarks: g('f-remarks')?.value || '',
+    follow_up_date: g('f-followup')?.value || ''
+  };
+  const res = await Sheets.addLead(lead);
+  btn.disabled = false;
+  if (res.success) {
+    toast(`Lead ${leadId} submitted successfully!`);
+    setTimeout(() => navigate('my-leads'), 1200);
+  } else {
+    btn.textContent = 'Submit Lead'; toast('Failed to submit lead', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// MY LEADS
+// ══════════════════════════════════════════════════
+async function renderMyLeads(c) {
+  const res = await Sheets.getLeads({ teacher_id: APP.profile.id });
+  const leads = res.success ? res.data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)) : [];
+  APP.leads = leads;
+  renderMyLeadsTable(c, leads, leads);
+}
+
+function renderMyLeadsTable(c, all, filtered) {
+  const statuses = ['All','Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
+  c.innerHTML = `
+    <div class="page-header-row">
+      <div><h1>My Leads</h1><p>${all.length} total leads submitted</p></div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px;position:relative">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="ml-search" placeholder="Search by name, phone, ID..." style="width:100%;border:1.5px solid var(--gray-200);border-radius:10px;padding:9px 14px 9px 36px;font-size:13px;font-family:inherit" oninput="filterMyLeads()">
+        </div>
+        <select id="ml-status" style="border:1.5px solid var(--gray-200);border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit;background:#fff" onchange="filterMyLeads()">
+          ${statuses.map(s => `<option>${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Lead ID</th><th>Date</th><th>Student</th><th>Parent</th><th>Grade</th><th>Area</th><th>Status</th><th>Follow-up</th><th></th>
+          </tr></thead>
+          <tbody id="my-leads-tbody">
+            ${filtered.length === 0 ? `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400)">No leads found</td></tr>` :
+            filtered.map(l => `
+              <tr>
+                <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray-500)">${l.lead_id}</td>
+                <td>${fmtDate(l.date)}</td>
+                <td style="font-weight:600">${l.student_name}</td>
+                <td><div>${l.parent_name}</div><div style="font-size:11px;color:var(--gray-400)">${l.parent_phone}</div></td>
+                <td>${l.grade}</td><td>${l.area}</td>
+                <td>${statusBadge(l.status)}</td>
+                <td>${l.follow_up_date ? `<span style="font-size:12px;font-weight:600;color:${isOverdue(l.follow_up_date)?'var(--red)':'var(--gray-500)'};">${isOverdue(l.follow_up_date)?'⚠ ':''}${fmtDate(l.follow_up_date)}</span>` : '<span style="color:var(--gray-300)">—</span>'}</td>
+                <td><button class="btn btn-sm btn-outline" onclick="openLeadPanel(${JSON.stringify(l).replace(/"/g,'&quot;')})">View</button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  // Store leads in data attr for filtering
+  c.dataset.leads = JSON.stringify(all);
+}
+
+function filterMyLeads() {
+  const search = document.getElementById('ml-search')?.value?.toLowerCase() || '';
+  const status = document.getElementById('ml-status')?.value || 'All';
+  const all = JSON.parse(document.getElementById('pages-container').dataset.leads || '[]');
+  let filtered = all;
+  if (status !== 'All') filtered = filtered.filter(l => l.status === status);
+  if (search) filtered = filtered.filter(l =>
+    l.student_name?.toLowerCase().includes(search) ||
+    l.parent_name?.toLowerCase().includes(search) ||
+    l.parent_phone?.includes(search) ||
+    l.lead_id?.toLowerCase().includes(search)
+  );
+  const tbody = document.getElementById('my-leads-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = filtered.length === 0 ? `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--gray-400)">No leads found</td></tr>` :
+    filtered.map(l => `
+      <tr>
+        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray-500)">${l.lead_id}</td>
+        <td>${fmtDate(l.date)}</td>
+        <td style="font-weight:600">${l.student_name}</td>
+        <td><div>${l.parent_name}</div><div style="font-size:11px;color:var(--gray-400)">${l.parent_phone}</div></td>
+        <td>${l.grade}</td><td>${l.area}</td>
+        <td>${statusBadge(l.status)}</td>
+        <td>${l.follow_up_date ? `<span style="font-size:12px;font-weight:600;color:${isOverdue(l.follow_up_date)?'var(--red)':'var(--gray-500)'};">${isOverdue(l.follow_up_date)?'⚠ ':''}${fmtDate(l.follow_up_date)}</span>` : '<span style="color:var(--gray-300)">—</span>'}</td>
+        <td><button class="btn btn-sm btn-outline" onclick="openLeadPanel(${JSON.stringify(l).replace(/"/g,'&quot;')})">View</button></td>
+      </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════════
+// MY PERFORMANCE
+// ══════════════════════════════════════════════════
+async function renderMyPerformance(c) {
+  const res = await Sheets.getLeads({ teacher_id: APP.profile.id });
+  const leads = res.success ? res.data : [];
+  const admitted = leads.filter(l => l.status === 'Admitted').length;
+  const active = leads.filter(l => !['Admitted','Dropped'].includes(l.status)).length;
+  const rate = calcRate(leads.length, admitted);
+  const statuses = ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
+  const byStatus = statuses.map(s => leads.filter(l => l.status === s).length);
+  const byArea = Object.entries(groupBy(leads, 'area')).map(([k,v]) => ({ area: k, total: v.length, admitted: v.filter(l=>l.status==='Admitted').length })).sort((a,b)=>b.total-a.total);
+  const sourceData = Object.entries(groupBy(leads, 'source'));
+
+  c.innerHTML = `
+    <div class="page-header"><h1>My Performance</h1><p>Your admission outreach statistics</p></div>
+    <div class="stat-grid">
+      ${statCard('Total Leads', leads.length, 'list', 'blue')}
+      ${statCard('Admitted', admitted, 'trophy', 'green')}
+      ${statCard('Conversion Rate', rate + '%', 'chart', 'orange')}
+      ${statCard('Active Pipeline', active, 'pin', 'purple')}
+    </div>
+    <div class="chart-grid">
+      <div class="card"><div class="card-title" style="margin-bottom:14px">Leads by Status</div><div class="chart-container"><canvas id="chart-status"></canvas></div></div>
+      <div class="card"><div class="card-title" style="margin-bottom:14px">Leads by Source</div><div class="chart-container"><canvas id="chart-source"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">Area-wise Performance</div>
+      ${byArea.length === 0 ? '<p style="color:var(--gray-400);font-size:13px">No data yet</p>' : `
+      <div class="table-wrap"><table>
+        <thead><tr><th>Area</th><th>Total Leads</th><th>Admitted</th><th>Rate</th></tr></thead>
+        <tbody>
+          ${byArea.map(r => `<tr>
+            <td style="font-weight:600">${r.area}</td>
+            <td>${r.total}</td>
+            <td style="color:var(--green);font-weight:600">${r.admitted}</td>
+            <td><span class="${rateClass(calcRate(r.total,r.admitted))}">${calcRate(r.total,r.admitted)}%</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`}
+    </div>
+  `;
+
+  APP.charts.status = new Chart(document.getElementById('chart-status'), {
+    type: 'bar', data: { labels: statuses, datasets: [{ data: byStatus, backgroundColor: statuses.map(s => statusColor(s) + 'cc'), borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } } } }
+  });
+
+  if (sourceData.length > 0) {
+    APP.charts.source = new Chart(document.getElementById('chart-source'), {
+      type: 'doughnut', data: { labels: sourceData.map(s=>s[0]), datasets: [{ data: sourceData.map(s=>s[1].length), backgroundColor: ['#f97316','#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444'] }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════
+// PRINCIPAL HOME
+// ══════════════════════════════════════════════════
+async function renderPrincipalHome(c) {
+  const [leadsRes] = await Promise.all([Sheets.getLeads()]);
+  const leads = leadsRes.success ? leadsRes.data : [];
+  APP.leads = leads;
+  const admitted = leads.filter(l => l.status === 'Admitted').length;
+  const rate = calcRate(leads.length, admitted);
+  const overdueLeads = leads.filter(l => isOverdue(l.follow_up_date) && !['Admitted','Dropped'].includes(l.status));
+  const todayLeads = leads.filter(l => l.created_at?.startsWith(today()) || l.date === today());
+  const recent = [...leads].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+  const quickLinks = [
+    { id: 'overview', icon: 'chart', label: 'Overview', color: '#eff6ff', ic: '#3b82f6' },
+    { id: 'teacher-performance', icon: 'users', label: 'Teachers', color: '#f0fdf4', ic: '#10b981' },
+    { id: 'area-analysis', icon: 'map', label: 'Areas', color: '#fff7ed', ic: '#f97316' },
+    { id: 'funnel', icon: 'filter', label: 'Funnel', color: '#f5f3ff', ic: '#8b5cf6' },
+    { id: 'all-leads', icon: 'list', label: 'All Leads', color: '#fdf4ff', ic: '#ec4899' },
+    { id: 'reports', icon: 'download', label: 'Reports', color: '#fffbeb', ic: '#f59e0b' },
+  ];
+
+  c.innerHTML = `
+    <div class="page-header"><h1>${APP.profile.role === 'admin' ? 'Admin' : 'Principal'} Dashboard</h1><p>Complete overview of this admission season</p></div>
+    <div class="stat-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+      ${statCard('Total Leads', leads.length, 'users', 'blue')}
+      ${statCard('Admitted', admitted, 'trophy', 'green')}
+      ${statCard('Conversion Rate', rate + '%', 'chart', 'orange')}
+      ${statCard('Active Teachers', APP.teachers.length, 'users', 'purple')}
+      ${statCard('Overdue', overdueLeads.length, 'clock', overdueLeads.length > 0 ? 'red' : 'green')}
+      ${statCard("Today's Leads", todayLeads.length, 'plus', 'yellow')}
+    </div>
+
+    <div class="quick-links">
+      ${quickLinks.map(ql => `
+        <div class="quick-link" onclick="navigate('${ql.id}')">
+          <div class="quick-link-icon" style="background:${ql.color};color:${ql.ic}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${ql.ic}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${{chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',map:'<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',filter:'<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>',download:'<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>'}[ql.icon]}</svg>
+          </div>
+          <span>${ql.label}</span>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      ${overdueLeads.length > 0 ? `
+        <div class="alert alert-red">
+          <div class="alert-header">${svg('alert')} Overdue Follow-ups (${overdueLeads.length})</div>
+          ${overdueLeads.slice(0,4).map(l => `
+            <div class="overdue-row">
+              <div><div style="font-weight:600;font-size:13px">${l.student_name}</div><div style="font-size:11px;color:var(--gray-500)">${l.teacher_name} · ${l.area}</div></div>
+              <div style="text-align:right">${statusBadge(l.status)}<div style="font-size:11px;color:var(--red);margin-top:3px">${fmtDate(l.follow_up_date)}</div></div>
+            </div>`).join('')}
+        </div>` : '<div></div>'}
+      <div class="card">
+        <div class="card-header"><div class="card-title">Recent Activity</div><button class="card-link" onclick="navigate('all-leads')">View all</button></div>
+        ${recent.map(l => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-50)">
+            <div style="min-width:0;flex:1;margin-right:10px"><div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.student_name}</div><div style="font-size:11px;color:var(--gray-400);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.teacher_name} · ${l.area}</div></div>
+            ${statusBadge(l.status)}
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-header"><div class="card-title">Teacher Overview</div></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Teacher</th><th>Assigned Areas</th><th>Leads</th><th>Admitted</th><th>Rate</th></tr></thead>
+        <tbody>
+          ${APP.teachers.map(t => {
+            const tl = leads.filter(l => l.teacher_id === t.id);
+            const ta = tl.filter(l => l.status === 'Admitted').length;
+            return `<tr>
+              <td style="font-weight:600">${t.full_name}</td>
+              <td style="font-size:12px;color:var(--gray-500);max-width:150px;overflow:hidden;text-overflow:ellipsis">${t.areas||'Not assigned'}</td>
+              <td style="color:var(--blue);font-weight:600">${tl.length}</td>
+              <td style="color:var(--green);font-weight:600">${ta}</td>
+              <td><span class="${rateClass(calcRate(tl.length,ta))}">${calcRate(tl.length,ta)}%</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════
+// OVERVIEW DASHBOARD
+// ══════════════════════════════════════════════════
+async function renderOverview(c) {
+  c.innerHTML = buildFilterBar() + `
+    <div class="page-header"><h1>Overview Dashboard</h1><p>Complete admission pipeline snapshot</p></div>
+    <div id="overview-content"></div>`;
+  await loadOverviewData({});
+}
+
+async function loadOverviewData(filters) {
+  const res = await Sheets.getLeads(filters);
+  const leads = res.success ? res.data : [];
+  const admitted = leads.filter(l => l.status === 'Admitted').length;
+  const dropped = leads.filter(l => l.status === 'Dropped').length;
+  const rate = calcRate(leads.length, admitted);
+  const statuses = ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
+  const funnelData = statuses.map(s => leads.filter(l => l.status === s).length);
+  const sourceData = Object.entries(groupBy(leads, 'source'));
+  const dailyData = Object.entries(groupBy(leads, 'date')).sort((a,b) => new Date(a[0]) - new Date(b[0])).slice(-30);
+
+  Object.values(APP.charts).forEach(c => { try { c.destroy(); } catch {} });
+  APP.charts = {};
+
+  const oc = document.getElementById('overview-content');
+  if (!oc) return;
+  oc.innerHTML = `
+    <div class="stat-grid">
+      ${statCard('Total Leads', leads.length, 'users', 'blue')}
+      ${statCard('Admitted', admitted, 'trophy', 'green')}
+      ${statCard('Conversion Rate', rate + '%', 'chart', 'orange')}
+      ${statCard('Dropped', dropped, 'alert', 'red')}
+    </div>
+    <div class="chart-grid">
+      <div class="card"><div class="card-title" style="margin-bottom:14px">Admission Funnel</div><div class="chart-container"><canvas id="ch-funnel"></canvas></div></div>
+      <div class="card"><div class="card-title" style="margin-bottom:14px">Source Breakdown</div><div class="chart-container"><canvas id="ch-source"></canvas></div></div>
+    </div>
+    <div class="card"><div class="card-title" style="margin-bottom:14px">Daily Lead Trend (Last 30 Days)</div><div style="height:200px"><canvas id="ch-daily"></canvas></div></div>
+  `;
+
+  APP.charts.funnel = new Chart(document.getElementById('ch-funnel'), {
+    type: 'bar', data: { labels: statuses, datasets: [{ data: funnelData, backgroundColor: statuses.map(s => statusColor(s) + 'cc'), borderRadius: 6 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+  });
+  if (sourceData.length > 0) {
+    APP.charts.source = new Chart(document.getElementById('ch-source'), {
+      type: 'doughnut', data: { labels: sourceData.map(s=>s[0]), datasets: [{ data: sourceData.map(s=>s[1].length), backgroundColor: ['#f97316','#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444'] }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+    });
+  }
+  if (dailyData.length > 0) {
+    APP.charts.daily = new Chart(document.getElementById('ch-daily'), {
+      type: 'line', data: { labels: dailyData.map(d => d[0]), datasets: [{ label: 'Leads', data: dailyData.map(d => d[1].length), borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.1)', fill: true, tension: .4, pointRadius: 3 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { maxRotation: 45, font: { size: 10 } } } } }
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════
+// TEACHER PERFORMANCE DASHBOARD
+// ══════════════════════════════════════════════════
+async function renderTeacherPerformance(c) {
+  c.innerHTML = buildFilterBar() + `
+    <div class="page-header"><h1>Teacher Performance</h1><p>Compare teacher-wise lead generation and conversion</p></div>
+    <div id="tp-content"></div>`;
+  await loadTeacherPerfData({});
+}
+
+async function loadTeacherPerfData(filters) {
+  const res = await Sheets.getLeads(filters);
+  const leads = res.success ? res.data : [];
+  Object.values(APP.charts).forEach(c => { try { c.destroy(); } catch {} });
+  APP.charts = {};
+
+  const stats = APP.teachers.map(t => {
+    const tl = leads.filter(l => l.teacher_id === t.id);
+    const admitted = tl.filter(l => l.status === 'Admitted').length;
+    return { ...t, total: tl.length, admitted, dropped: tl.filter(l=>l.status==='Dropped').length, active: tl.filter(l=>!['Admitted','Dropped'].includes(l.status)).length, rate: calcRate(tl.length, admitted) };
+  }).sort((a,b) => b.total - a.total);
+
+  const top3 = stats.slice(0, 3);
+  const needsSupport = stats.filter(t => t.rate < 15 && t.total > 0);
+
+  const tc = document.getElementById('tp-content');
+  if (!tc) return;
+  tc.innerHTML = `
+    ${top3.length > 0 ? `<div class="top3-grid">
+      ${top3.map((t,i) => `<div class="top3-card">
+        <div class="top3-medal">${['🥇','🥈','🥉'][i]}</div>
+        <div class="top3-name">${t.full_name}</div>
+        <div class="top3-areas">${t.areas || 'No area'}</div>
+        <div class="top3-stats">
+          <div class="top3-stat"><div class="top3-stat-val" style="color:var(--blue)">${t.total}</div><div class="top3-stat-label">Leads</div></div>
+          <div class="top3-stat"><div class="top3-stat-val" style="color:var(--green)">${t.admitted}</div><div class="top3-stat-label">Admitted</div></div>
+          <div class="top3-stat"><div class="top3-stat-val" style="color:var(--orange)">${t.rate}%</div><div class="top3-stat-label">Rate</div></div>
+        </div>
+      </div>`).join('')}
+    </div>` : ''}
+
+    <div class="card"><div class="card-title" style="margin-bottom:14px">Leads vs Admissions</div><div style="height:220px"><canvas id="ch-tbar"></canvas></div></div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">Complete Teacher Report</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Teacher</th><th>Assigned Areas</th><th>Total</th><th>Admitted</th><th>Dropped</th><th>Active</th><th>Rate</th></tr></thead>
+        <tbody>
+          ${stats.map((t,i) => `<tr>
+            <td style="color:var(--gray-400);font-weight:700">#${i+1}</td>
+            <td style="font-weight:600">${t.full_name}</td>
+            <td style="font-size:12px;color:var(--gray-500);max-width:140px;overflow:hidden;text-overflow:ellipsis">${t.areas||'—'}</td>
+            <td style="color:var(--blue);font-weight:600">${t.total}</td>
+            <td style="color:var(--green);font-weight:600">${t.admitted}</td>
+            <td style="color:var(--red)">${t.dropped}</td>
+            <td>${t.active}</td>
+            <td><span class="${rateClass(t.rate)}">${t.rate}%</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+
+    ${needsSupport.length > 0 ? `<div class="alert alert-yellow">
+      <div class="alert-header">${svg('alert')} Needs Attention — Conversion Below 15%</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${needsSupport.map(t=>`<span style="background:#fff;border:1.5px solid #fde68a;color:#92400e;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600">${t.full_name} (${t.rate}%)</span>`).join('')}</div>
+    </div>` : ''}
+  `;
+
+  APP.charts.tbar = new Chart(document.getElementById('ch-tbar'), {
+    type: 'bar',
+    data: { labels: stats.map(t => t.full_name.split(' ')[0]), datasets: [{ label: 'Leads', data: stats.map(t=>t.total), backgroundColor: '#93c5fd', borderRadius: 4 }, { label: 'Admitted', data: stats.map(t=>t.admitted), backgroundColor: '#6ee7b7', borderRadius: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+// ══════════════════════════════════════════════════
+// AREA ANALYSIS
+// ══════════════════════════════════════════════════
+async function renderAreaAnalysis(c) {
+  c.innerHTML = buildFilterBar() + `
+    <div class="page-header"><h1>Area Analysis</h1><p>Geographic performance of admission outreach. Click a row to drill down.</p></div>
+    <div id="aa-content"></div>`;
+  await loadAreaData({});
+}
+
+async function loadAreaData(filters) {
+  const res = await Sheets.getLeads(filters);
+  const leads = res.success ? res.data : [];
+  Object.values(APP.charts).forEach(c => { try { c.destroy(); } catch {} }); APP.charts = {};
+  const areaStats = Object.entries(groupBy(leads, 'area')).map(([area, ls]) => ({
+    area, total: ls.length, admitted: ls.filter(l=>l.status==='Admitted').length,
+    dropped: ls.filter(l=>l.status==='Dropped').length,
+    active: ls.filter(l=>!['Admitted','Dropped'].includes(l.status)).length,
+    rate: calcRate(ls.length, ls.filter(l=>l.status==='Admitted').length),
+    teachers: [...new Set(ls.map(l=>l.teacher_name))].join(', ')
+  })).sort((a,b) => b.total - a.total);
+
+  const ac = document.getElementById('aa-content');
+  if (!ac) return;
+  ac.innerHTML = `
+    <div class="card"><div class="card-title" style="margin-bottom:14px">Leads by Area</div><div style="height:220px"><canvas id="ch-area"></canvas></div></div>
+    <div class="card" id="area-table-card">
+      <div class="card-title" style="margin-bottom:14px">Area Performance Table</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Area</th><th>Teachers</th><th>Total</th><th>Admitted</th><th>Dropped</th><th>Active</th><th>Rate</th><th></th></tr></thead>
+        <tbody id="area-tbody">
+          ${areaStats.map(a => `
+            <tr id="area-row-${a.area.replace(/\s/g,'_')}" style="cursor:pointer" onclick="toggleAreaDrill('${a.area.replace(/'/g,"\\'")}',${JSON.stringify(leads).replace(/"/g,'&quot;')})">
+              <td style="font-weight:600">${a.area}</td>
+              <td style="font-size:12px;color:var(--gray-500);max-width:140px;overflow:hidden;text-overflow:ellipsis">${a.teachers}</td>
+              <td style="color:var(--blue);font-weight:600">${a.total}</td>
+              <td style="color:var(--green);font-weight:600">${a.admitted}</td>
+              <td style="color:var(--red)">${a.dropped}</td>
+              <td>${a.active}</td>
+              <td><span class="${rateClass(a.rate)}">${a.rate}%</span></td>
+              <td style="color:var(--orange);font-size:12px;font-weight:600">View ▼</td>
+            </tr>
+            <tr id="drill-${a.area.replace(/\s/g,'_')}" class="hidden"><td colspan="8" style="padding:0"></td></tr>
+          `).join('')}
+        </tbody>
+      </table></div>
+    </div>
+  `;
+
+  APP.charts.area = new Chart(document.getElementById('ch-area'), {
+    type: 'bar',
+    data: { labels: areaStats.map(a=>a.area), datasets: [{ label:'Leads', data: areaStats.map(a=>a.total), backgroundColor:'#93c5fd', borderRadius:4 },{ label:'Admitted', data: areaStats.map(a=>a.admitted), backgroundColor:'#6ee7b7', borderRadius:4 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top', labels:{ font:{ size:11 } } } }, scales:{ y:{ beginAtZero:true } } }
+  });
+}
+
+function toggleAreaDrill(area, leadsJson) {
+  const leads = typeof leadsJson === 'string' ? JSON.parse(leadsJson) : leadsJson;
+  const key = area.replace(/\s/g,'_');
+  const drillRow = document.getElementById(`drill-${key}`);
+  if (!drillRow) return;
+  const isOpen = !drillRow.classList.contains('hidden');
+  if (isOpen) { drillRow.classList.add('hidden'); return; }
+  const areaLeads = leads.filter(l => l.area === area);
+  drillRow.classList.remove('hidden');
+  drillRow.querySelector('td').innerHTML = `
+    <div style="background:var(--orange-light);border:1.5px solid #fed7aa;border-radius:10px;margin:8px;padding:14px">
+      <div style="font-weight:700;color:#9a3412;margin-bottom:10px;font-size:13px">Leads from ${area} (${areaLeads.length})</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Lead ID</th><th>Student</th><th>Parent</th><th>Teacher</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${areaLeads.map(l => `<tr>
+            <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gray-500)">${l.lead_id}</td>
+            <td style="font-weight:600">${l.student_name}</td>
+            <td>${l.parent_name}</td>
+            <td style="font-size:12px">${l.teacher_name}</td>
+            <td>${statusBadge(l.status)}</td>
+            <td><button class="btn btn-sm btn-outline" onclick="openLeadPanel(${JSON.stringify(l).replace(/"/g,'&quot;')})">View</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════
+// FUNNEL DASHBOARD
+// ══════════════════════════════════════════════════
+async function renderFunnel(c) {
+  c.innerHTML = buildFilterBar() + `
+    <div class="page-header"><h1>Funnel Deep Dive</h1><p>Stage-by-stage breakdown of your admission pipeline</p></div>
+    <div id="fn-content"></div>`;
+  await loadFunnelData({});
+}
+
+async function loadFunnelData(filters) {
+  const res = await Sheets.getLeads(filters);
+  const leads = res.success ? res.data : [];
+  Object.values(APP.charts).forEach(c => { try { c.destroy(); } catch {} }); APP.charts = {};
+  const statuses = ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
+  const counts = statuses.map(s => leads.filter(l => l.status === s).length);
+  const stuck = leads.filter(l => {
+    if (!l.follow_up_date || ['Admitted','Dropped'].includes(l.status)) return false;
+    return (Date.now() - new Date(l.follow_up_date).getTime()) / 86400000 > 7;
+  });
+
+  const fc = document.getElementById('fn-content');
+  if (!fc) return;
+  fc.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-bottom:20px">
+      ${statuses.map((s,i) => `<div style="background:#fff;border-radius:14px;border:1px solid var(--gray-100);padding:14px;text-align:center">
+        <div style="width:40px;height:40px;border-radius:50%;background:${statusColor(s)};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;margin:0 auto 8px">${counts[i]}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--gray-700);line-height:1.3">${s}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card"><div class="card-title" style="margin-bottom:14px">Stage Distribution</div><div style="height:240px"><canvas id="ch-funnel2"></canvas></div></div>
+    ${stuck.length > 0 ? `<div class="alert alert-yellow">
+      <div class="alert-header">${svg('clock')} Stuck Leads — No Update in 7+ Days (${stuck.length})</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Student</th><th>Teacher</th><th>Area</th><th>Status</th><th>Due Date</th></tr></thead>
+        <tbody>${stuck.slice(0,8).map(l=>`<tr>
+          <td style="font-weight:600">${l.student_name}</td>
+          <td style="font-size:12px">${l.teacher_name}</td>
+          <td>${l.area}</td>
+          <td>${statusBadge(l.status)}</td>
+          <td style="color:var(--red);font-size:12px;font-weight:600">${l.follow_up_date}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>` : ''}
+  `;
+
+  APP.charts.funnel2 = new Chart(document.getElementById('ch-funnel2'), {
+    type: 'bar',
+    data: { labels: statuses, datasets: [{ data: counts, backgroundColor: statuses.map(s=>statusColor(s)+'cc'), borderRadius: 6 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+  });
+}
+
+// ══════════════════════════════════════════════════
+// ALL LEADS
+// ══════════════════════════════════════════════════
+async function renderAllLeads(c) {
+  c.innerHTML = buildFilterBar() + `
+    <div class="page-header-row">
+      <div><h1>All Leads</h1><p id="all-leads-count">Loading...</p></div>
+      <button class="btn btn-green" onclick="exportLeadsExcel()">${svg('download')} Export Excel</button>
+    </div>
+    <div class="card" style="padding:0"><div class="table-wrap" id="all-leads-table-wrap">
+      <div style="text-align:center;padding:40px;color:var(--gray-400)"><div class="spinner" style="margin:0 auto"></div></div>
+    </div></div>
+  `;
+  await loadAllLeadsData({});
+}
+
+window._allLeadsData = [];
+async function loadAllLeadsData(filters) {
+  const res = await Sheets.getLeads(filters);
+  const leads = res.success ? res.data : [];
+  window._allLeadsData = leads;
+  const countEl = document.getElementById('all-leads-count');
+  if (countEl) countEl.textContent = `${leads.length} leads`;
+  renderAllLeadsTable(leads);
+}
+
+function renderAllLeadsTable(leads) {
+  const wrap = document.getElementById('all-leads-table-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = leads.length === 0 ? `<div style="text-align:center;padding:40px;color:var(--gray-400)">No leads found</div>` : `
+    <table>
+      <thead><tr><th>Lead ID</th><th>Date</th><th>Teacher</th><th>Student</th><th>Parent</th><th>Phone</th><th>Grade</th><th>Area</th><th>Source</th><th>Status</th><th>Follow-up</th><th></th></tr></thead>
+      <tbody>
+        ${leads.map(l => `<tr>
+          <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gray-500)">${l.lead_id}</td>
+          <td>${fmtDate(l.date)}</td>
+          <td style="font-size:12px">${l.teacher_name}</td>
+          <td style="font-weight:600">${l.student_name}</td>
+          <td>${l.parent_name}</td>
+          <td>${l.parent_phone}</td>
+          <td>${l.grade}</td>
+          <td>${l.area}</td>
+          <td style="font-size:12px">${l.source}</td>
+          <td>${statusBadge(l.status)}</td>
+          <td>${l.follow_up_date ? `<span style="font-size:12px;font-weight:600;color:${isOverdue(l.follow_up_date)?'var(--red)':'var(--gray-500)'};">${isOverdue(l.follow_up_date)?'⚠ ':''}${fmtDate(l.follow_up_date)}</span>` : '<span style="color:var(--gray-300)">—</span>'}</td>
+          <td><button class="btn btn-sm btn-outline" onclick="openLeadPanel(${JSON.stringify(l).replace(/"/g,'&quot;')})">View</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function exportLeadsExcel() {
+  const leads = window._allLeadsData || [];
+  if (!leads.length) { toast('No data to export', 'error'); return; }
+  const ws = XLSX.utils.json_to_sheet(leads);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+  XLSX.writeFile(wb, `AdmissionTracker_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.xlsx`);
+  toast('Excel file downloaded!');
+}
+
+// ══════════════════════════════════════════════════
+// REPORTS
+// ══════════════════════════════════════════════════
+async function renderReports(c) {
+  const res = await Sheets.getLeads();
+  const leads = res.success ? res.data : [];
+  const admitted = leads.filter(l => l.status === 'Admitted').length;
+
+  c.innerHTML = `
+    <div class="page-header"><h1>Reports</h1><p>Generate and export admission data reports</p></div>
+    <div class="stat-grid">
+      ${statCard('Total Leads', leads.length, 'list', 'blue')}
+      ${statCard('Admitted', admitted, 'trophy', 'green')}
+      ${statCard('Conversion Rate', calcRate(leads.length, admitted) + '%', 'chart', 'orange')}
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <div style="width:48px;height:48px;background:var(--orange-light);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--orange)">${svg('file')}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:15px;margin-bottom:6px">Full Season Report</div>
+          <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Downloads an Excel file with 3 sheets: All Leads, Teacher Summary, and Area Summary.</p>
+          <button class="btn btn-orange" onclick="exportFullReport(${JSON.stringify(leads).replace(/"/g,'&quot;')})">${svg('download')} Download Excel Report</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function exportFullReport(leads) {
+  if (!leads || !leads.length) { toast('No data to export', 'error'); return; }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(leads), 'All Leads');
+
+  const teacherSummary = APP.teachers.map(t => {
+    const tl = leads.filter(l => l.teacher_id === t.id);
+    const admitted = tl.filter(l => l.status === 'Admitted').length;
+    return { Teacher: t.full_name, 'Assigned Areas': t.areas, 'Total Leads': tl.length, Admitted: admitted, Dropped: tl.filter(l=>l.status==='Dropped').length, 'Conversion Rate': calcRate(tl.length,admitted)+'%' };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(teacherSummary), 'Teacher Summary');
+
+  const areas = Object.entries(groupBy(leads,'area')).map(([area,ls]) => ({
+    Area: area, 'Total Leads': ls.length, Admitted: ls.filter(l=>l.status==='Admitted').length,
+    Dropped: ls.filter(l=>l.status==='Dropped').length, 'Conversion Rate': calcRate(ls.length,ls.filter(l=>l.status==='Admitted').length)+'%'
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(areas), 'Area Summary');
+  XLSX.writeFile(wb, `AdmissionTracker_Report_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.xlsx`);
+  toast('Report downloaded!');
+}
+
+// ══════════════════════════════════════════════════
+// USER MANAGEMENT
+// ══════════════════════════════════════════════════
+async function renderUserManagement(c) {
+  await loadSharedData(); // refresh users
+  const isPrincipal = APP.profile.role === 'principal';
+  const isAdmin = APP.profile.role === 'admin';
+
+  c.innerHTML = `
+    <div class="page-header-row">
+      <div><h1>User Management</h1><p>${isPrincipal ? 'Assign areas to teachers' : 'Manage all user accounts'}</p></div>
+    </div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Assigned Areas</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${APP.allUsers.map(u => `<tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0">${u.full_name?.charAt(0)||'U'}</div>
+                <span style="font-weight:600">${u.full_name}</span>
+              </div>
+            </td>
+            <td style="font-size:12px;color:var(--gray-500)">${u.email}</td>
+            <td style="font-size:12px;color:var(--gray-500)">${u.phone}</td>
+            <td><span class="badge role-badge-${u.role}">${u.role}</span></td>
+            <td style="font-size:12px;color:var(--gray-500);max-width:160px">
+              ${u.role === 'teacher' ? `
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.areas || 'Not assigned'}</span>
+                  <button onclick="openAreaModal('${u.id}','${u.full_name}','${u.areas||''}')" style="background:none;border:none;color:var(--orange);cursor:pointer;flex-shrink:0" title="Assign areas">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </button>
+                </div>` : '<span style="color:var(--gray-300)">—</span>'}
+            </td>
+            <td><span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:${u.status==='active'?'#d1fae5':'#fee2e2'};color:${u.status==='active'?'#065f46':'#991b1b'}">${u.status}</span></td>
+            <td>
+              <div style="display:flex;gap:6px;align-items:center">
+                ${u.role === 'teacher' ? `<button onclick="openAreaModal('${u.id}','${u.full_name}','${u.areas||''}')" class="btn btn-sm btn-outline" title="Assign areas" style="padding:5px 8px">📍</button>` : ''}
+                ${isAdmin ? `
+                  <button onclick="resetPassword('${u.email}','${u.full_name}')" class="btn btn-sm btn-outline" title="Reset password" style="padding:5px 8px">🔑</button>
+                  <button onclick="toggleUserStatus('${u.id}','${u.status}','${u.full_name}')" class="btn btn-sm ${u.status==='active'?'btn-outline':'btn-green'}" style="padding:5px 8px" title="${u.status==='active'?'Disable':'Enable'}">${u.status==='active'?'🚫':'✅'}</button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+    <div class="alert alert-blue" style="margin-top:16px">
+      <div class="alert-header">${svg('alert')} Area Assignment Guide</div>
+      <p style="font-size:13px;color:var(--blue)">Click 📍 next to any teacher to assign areas. Both principal and admin can assign areas. Admin can also reset passwords (🔑) and enable/disable accounts.</p>
+    </div>
+  `;
+}
+
+function openAreaModal(userId, userName, currentAreas) {
+  APP.editingAreaUserId = userId;
+  APP.editingAreaSelectedAreas = parseAreas(currentAreas);
+  document.getElementById('area-modal-teacher-name').textContent = userName;
+  const settings = APP.settings || {};
+  const areas = settings.areas || [];
+  const grid = document.getElementById('area-checkbox-grid');
+  grid.innerHTML = areas.map(area => `
+    <div class="area-checkbox ${APP.editingAreaSelectedAreas.includes(area) ? 'checked' : ''}" onclick="toggleAreaCheck(this,'${area}')">
+      <input type="checkbox" ${APP.editingAreaSelectedAreas.includes(area) ? 'checked' : ''}>
+      <div class="area-check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <span>${area}</span>
+    </div>`).join('');
+  updateAreaSelectedDisplay();
+  document.getElementById('area-modal').classList.add('open');
+}
+
+function closeAreaModal() {
+  document.getElementById('area-modal').classList.remove('open');
+  APP.editingAreaUserId = null;
+  APP.editingAreaSelectedAreas = [];
+}
+
+function toggleAreaCheck(el, area) {
+  const idx = APP.editingAreaSelectedAreas.indexOf(area);
+  if (idx > -1) { APP.editingAreaSelectedAreas.splice(idx, 1); el.classList.remove('checked'); }
+  else { APP.editingAreaSelectedAreas.push(area); el.classList.add('checked'); }
+  updateAreaSelectedDisplay();
+}
+
+function updateAreaSelectedDisplay() {
+  const d = document.getElementById('area-selected-display');
+  if (d) d.textContent = APP.editingAreaSelectedAreas.length > 0 ? 'Selected: ' + APP.editingAreaSelectedAreas.join(', ') : '';
+}
+
+async function saveAreas() {
+  if (!APP.editingAreaUserId) return;
+  const areasStr = APP.editingAreaSelectedAreas.join(',');
+  const { error } = await sb.from('users').update({ areas: areasStr }).eq('id', APP.editingAreaUserId);
+  if (error) { toast('Failed to update areas: ' + error.message, 'error'); return; }
+  await sb.from('audit_logs').insert({ user_id: APP.profile.id, user_name: APP.profile.full_name, user_role: APP.profile.role, action: 'UPDATE_AREAS', target_id: APP.editingAreaUserId, details: `Assigned areas: ${areasStr}` });
+  toast('Areas updated successfully!');
+  closeAreaModal();
+  await renderUserManagement(document.getElementById('pages-container'));
+}
+
+async function resetPassword(email, name) {
+  if (!confirm(`Send password reset email to ${name} (${email})?`)) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  if (error) { toast('Failed: ' + error.message, 'error'); return; }
+  await sb.from('audit_logs').insert({ user_id: APP.profile.id, user_name: APP.profile.full_name, user_role: APP.profile.role, action: 'PASSWORD_RESET', details: `Reset password for ${name} (${email})` });
+  toast(`Reset email sent to ${email}`);
+}
+
+async function toggleUserStatus(userId, currentStatus, name) {
+  const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
+  if (!confirm(`${newStatus === 'active' ? 'Enable' : 'Disable'} account for ${name}?`)) return;
+  const { error } = await sb.from('users').update({ status: newStatus }).eq('id', userId);
+  if (error) { toast('Failed: ' + error.message, 'error'); return; }
+  await sb.from('audit_logs').insert({ user_id: APP.profile.id, user_name: APP.profile.full_name, user_role: APP.profile.role, action: `ACCOUNT_${newStatus.toUpperCase()}`, details: `${newStatus === 'active' ? 'Enabled' : 'Disabled'} account for ${name}` });
+  toast(`Account ${newStatus === 'active' ? 'enabled' : 'disabled'}`);
+  await renderUserManagement(document.getElementById('pages-container'));
+}
+
+// ══════════════════════════════════════════════════
+// AUDIT LOGS
+// ══════════════════════════════════════════════════
+async function renderAuditLogs(c) {
+  const { data: logs, error } = await sb.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(500);
+  const all = error ? [] : logs;
+
+  c.innerHTML = `
+    <div class="page-header-row">
+      <div><h1>Audit Logs</h1><p>Complete record of all system actions</p></div>
+      <button class="btn btn-green" onclick="exportAuditLogs()">${svg('download')} Export</button>
+    </div>
+    <div class="card" style="padding:14px">
+      <input type="text" id="audit-search" placeholder="Search by user, action, or details..."
+        style="width:100%;border:1.5px solid var(--gray-200);border-radius:10px;padding:10px 16px;font-size:13px;font-family:inherit"
+        oninput="filterAudit(this.value)">
+    </div>
+    <div class="card" style="padding:0">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date & Time</th><th>User</th><th>Role</th><th>Action</th><th>Details</th></tr></thead>
+        <tbody id="audit-tbody">
+          ${renderAuditRows(all)}
+        </tbody>
+      </table></div>
+    </div>
+  `;
+  c.dataset.auditLogs = JSON.stringify(all);
+}
+
+function renderAuditRows(logs) {
+  if (!logs.length) return `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--gray-400)">No logs found</td></tr>`;
+  return logs.map(log => `<tr>
+    <td style="font-size:12px;white-space:nowrap">${fmtDT(log.created_at)}</td>
+    <td style="font-weight:600;white-space:nowrap">${log.user_name || '—'}</td>
+    <td style="font-size:12px;text-transform:capitalize">${log.user_role || '—'}</td>
+    <td><span class="audit-chip audit-${log.action||''}">${log.action||'—'}</span></td>
+    <td style="font-size:12px;color:var(--gray-500);max-width:260px;overflow:hidden;text-overflow:ellipsis">${log.details || '—'}</td>
+  </tr>`).join('');
+}
+
+function filterAudit(q) {
+  const all = JSON.parse(document.getElementById('pages-container').dataset.auditLogs || '[]');
+  const filtered = q ? all.filter(l =>
+    l.user_name?.toLowerCase().includes(q.toLowerCase()) ||
+    l.action?.toLowerCase().includes(q.toLowerCase()) ||
+    l.details?.toLowerCase().includes(q.toLowerCase())
+  ) : all;
+  document.getElementById('audit-tbody').innerHTML = renderAuditRows(filtered);
+}
+
+function exportAuditLogs() {
+  const all = JSON.parse(document.getElementById('pages-container').dataset.auditLogs || '[]');
+  if (!all.length) { toast('No data to export', 'error'); return; }
+  const ws = XLSX.utils.json_to_sheet(all);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Audit Logs');
+  XLSX.writeFile(wb, `AuditLogs_${new Date().toLocaleDateString('en-IN').replace(/\//g,'-')}.xlsx`);
+  toast('Audit logs exported!');
+}
+
+// ══════════════════════════════════════════════════
+// SYSTEM SETTINGS
+// ══════════════════════════════════════════════════
+async function renderSystemSettings(c) {
+  const settings = APP.settings || {};
+  const lists = [
+    { key: 'areas', label: 'Areas / Localities' },
+    { key: 'sources', label: 'Lead Sources' },
+    { key: 'grades', label: 'Grades / Classes' },
+    { key: 'statuses', label: 'Lead Statuses' },
+  ];
+
+  c.innerHTML = `
+    <div class="page-header"><h1>System Settings</h1><p>Edit dropdown values. Changes save to Google Sheets and reflect immediately.</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      ${lists.map(({ key, label }) => `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">${label}</div>
+            <div style="display:flex;gap:8px">
+              <button onclick="addSettingItem('${key}')" class="btn btn-sm btn-outline" style="padding:5px 10px">+ Add</button>
+              <button onclick="saveSettingList('${key}')" class="btn btn-sm btn-orange" style="padding:5px 10px" id="save-${key}">Save</button>
+            </div>
+          </div>
+          <div class="setting-chips" id="chips-${key}">
+            ${(settings[key] || []).map(item => `
+              <span class="setting-chip">${item}<button onclick="removeSettingItem('${key}','${item}')">×</button></span>
+            `).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="alert alert-blue" style="margin-top:8px">
+      <div class="alert-header">${svg('alert')} How Settings Work</div>
+      <p style="font-size:13px;color:var(--blue)">All changes save directly to the SETTINGS tab in your Google Sheet. Dropdowns in the lead form and dashboards update immediately on next load.</p>
+    </div>
+  `;
+}
+
+function addSettingItem(key) {
+  const val = prompt(`Enter new ${key.slice(0,-1)}:`);
+  if (!val?.trim()) return;
+  if (!APP.settings[key]) APP.settings[key] = [];
+  APP.settings[key].push(val.trim());
+  refreshSettingChips(key);
+}
+
+function removeSettingItem(key, item) {
+  APP.settings[key] = (APP.settings[key] || []).filter(i => i !== item);
+  refreshSettingChips(key);
+}
+
+function refreshSettingChips(key) {
+  const c = document.getElementById(`chips-${key}`);
+  if (!c) return;
+  c.innerHTML = (APP.settings[key] || []).map(item => `
+    <span class="setting-chip">${item}<button onclick="removeSettingItem('${key}','${item}')">×</button></span>
+  `).join('');
+}
+
+async function saveSettingList(key) {
+  const btn = document.getElementById(`save-${key}`);
+  if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+  const value = (APP.settings[key] || []).join(',');
+  await Sheets.updateSettings(key, value);
+  if (btn) { btn.textContent = 'Save'; btn.disabled = false; }
+  toast(`${key} saved successfully!`);
+}
+
+// ══════════════════════════════════════════════════
+// LEAD DETAIL PANEL
+// ══════════════════════════════════════════════════
+function openLeadPanel(lead) {
+  APP.panelLead = lead;
+  document.getElementById('panel-lead-id').textContent = lead.lead_id;
+  document.getElementById('panel-status-badge').innerHTML = statusBadge(lead.status);
+
+  const settings = APP.settings || {};
+  const statuses = settings.statuses || ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
+  const isReadonly = APP.profile.role === 'teacher' && lead.teacher_id !== APP.profile.id;
+
+  const fields = [
+    { label: 'Student', value: lead.student_name }, { label: 'Parent', value: lead.parent_name },
+    { label: 'Phone', value: lead.parent_phone }, { label: 'Alt Phone', value: lead.alt_phone || '—' },
+    { label: 'Grade', value: lead.grade }, { label: 'Current School', value: lead.current_school },
+    { label: 'Area', value: lead.area }, { label: 'Source', value: lead.source },
+    { label: 'Date', value: fmtDate(lead.date) }, { label: 'Teacher', value: lead.teacher_name },
+  ];
+
+  document.getElementById('panel-body').innerHTML = `
+    <div class="info-grid">${fields.map(f=>`<div class="info-cell"><div class="info-cell-label">${f.label}</div><div class="info-cell-value">${f.value||'—'}</div></div>`).join('')}</div>
+    ${!isReadonly ? `
+      <div class="update-section">
+        <div class="update-section-label">Update Lead</div>
+        <div class="form-group"><label>Status</label>
+          <select id="panel-status" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff">
+            ${statuses.map(s=>`<option value="${s}" ${s===lead.status?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>Remarks</label>
+          <textarea id="panel-remarks" rows="3" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 14px;font-size:14px;font-family:inherit;resize:none">${lead.remarks||''}</textarea>
+        </div>
+        <div class="form-group"><label>Follow-up Date ${isOverdue(lead.follow_up_date)?'<span style="color:var(--red);font-size:11px;font-weight:700;margin-left:6px">OVERDUE</span>':''}</label>
+          <input type="date" id="panel-followup" value="${lead.follow_up_date||''}" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit">
+        </div>
+        <button class="btn btn-orange" style="width:100%;padding:12px;font-size:14px" onclick="savePanelLead()">Save Changes</button>
+      </div>
+    ` : ''}
+  `;
+
+  document.getElementById('lead-panel-overlay').style.display = 'block';
+  document.getElementById('lead-panel').classList.add('open');
+}
+
+function closeLeadPanel() {
+  document.getElementById('lead-panel').classList.remove('open');
+  document.getElementById('lead-panel-overlay').style.display = 'none';
+}
+
+async function savePanelLead() {
+  const lead = APP.panelLead;
+  const status = document.getElementById('panel-status')?.value;
+  const remarks = document.getElementById('panel-remarks')?.value;
+  const followup = document.getElementById('panel-followup')?.value;
+  const btn = document.querySelector('#lead-panel .btn-orange');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  const res = await Sheets.updateLead({ lead_id: lead.lead_id, status, remarks, follow_up_date: followup });
+  if (res.success) {
+    if (status !== lead.status) {
+      await Sheets.addHistory({ lead_id: lead.lead_id, old_status: lead.status, new_status: status, changed_by_id: APP.profile.id, changed_by_name: APP.profile.full_name, changed_by_role: APP.profile.role, notes: remarks });
+    }
+    toast('Lead updated successfully!');
+    APP.panelLead = { ...lead, status, remarks, follow_up_date: followup };
+    document.getElementById('panel-status-badge').innerHTML = statusBadge(status);
+    closeLeadPanel();
+  } else {
+    toast('Failed to update lead', 'error');
+  }
+  btn.textContent = 'Save Changes'; btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════
+// FILTER BAR (Universal)
+// ══════════════════════════════════════════════════
+function buildFilterBar() {
+  const settings = APP.settings || {};
+  return `
+    <div class="filter-bar" style="margin-bottom:20px">
+      <div class="filter-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('svg').style.transform=this.nextElementSibling.classList.contains('open')?'rotate(180deg)':''">
+        <div class="filter-toggle-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filters
+          <span id="filter-active-badge" class="filter-active-badge hidden">Active</span>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="filter-body">
+        <div class="filter-grid">
+          <div><label>Search</label><input type="text" id="f-search" placeholder="Name or phone..."></div>
+          <div><label>Teacher</label>
+            <select id="f-teacher">
+              <option value="">All Teachers</option>
+              ${APP.teachers.map(t=>`<option value="${t.id}">${t.full_name}</option>`).join('')}
+            </select>
+          </div>
+          <div><label>Area</label>
+            <select id="f-area-filter">
+              <option value="">All Areas</option>
+              ${(settings.areas||[]).map(a=>`<option>${a}</option>`).join('')}
+            </select>
+          </div>
+          <div><label>Status</label>
+            <select id="f-status-filter">
+              <option value="">All Statuses</option>
+              ${(settings.statuses||['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped']).map(s=>`<option>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div><label>Source</label>
+            <select id="f-source-filter">
+              <option value="">All Sources</option>
+              ${(settings.sources||[]).map(s=>`<option>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div><label>Grade</label>
+            <select id="f-grade-filter">
+              <option value="">All Grades</option>
+              ${(settings.grades||[]).map(g=>`<option>${g}</option>`).join('')}
+            </select>
+          </div>
+          <div><label>From Date</label><input type="date" id="f-from"></div>
+          <div><label>To Date</label><input type="date" id="f-to"></div>
+        </div>
+        <div class="filter-actions">
+          <button class="btn btn-orange" onclick="applyFilters()">Apply Filters</button>
+          <button class="btn btn-outline" onclick="resetFilters()">Reset</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getFilterValues() {
+  return {
+    search: document.getElementById('f-search')?.value || '',
+    teacher_id: document.getElementById('f-teacher')?.value || '',
+    area: document.getElementById('f-area-filter')?.value || '',
+    status: document.getElementById('f-status-filter')?.value || '',
+    source: document.getElementById('f-source-filter')?.value || '',
+    grade: document.getElementById('f-grade-filter')?.value || '',
+    from_date: document.getElementById('f-from')?.value || '',
+    to_date: document.getElementById('f-to')?.value || '',
+  };
+}
+
+function applyFilters() {
+  const f = getFilterValues();
+  const hasActive = Object.values(f).some(v => v !== '');
+  const badge = document.getElementById('filter-active-badge');
+  if (badge) badge.classList.toggle('hidden', !hasActive);
+  const page = APP.currentPage;
+  if (page === 'overview') loadOverviewData(f);
+  else if (page === 'teacher-performance') loadTeacherPerfData(f);
+  else if (page === 'area-analysis') loadAreaData(f);
+  else if (page === 'funnel') loadFunnelData(f);
+  else if (page === 'all-leads') loadAllLeadsData(f);
+}
+
+function resetFilters() {
+  ['f-search','f-teacher','f-area-filter','f-status-filter','f-source-filter','f-grade-filter','f-from','f-to'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const badge = document.getElementById('filter-active-badge');
+  if (badge) badge.classList.add('hidden');
+  applyFilters();
+}
+
+// ══════════════════════════════════════════════════
+// ENTER KEY SUPPORT
+// ══════════════════════════════════════════════════
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    const activePage = document.getElementById('page-login');
+    if (activePage && !activePage.classList.contains('hidden')) doLogin();
+  }
+});
+
+// ══════════════════════════════════════════════════
+// START
+// ══════════════════════════════════════════════════
+window.addEventListener('load', initApp);
+</script>
+</body>
+</html>
