@@ -1548,10 +1548,6 @@ function buildFilterBar(){
   var gradeOpts='<option value="">All Grades</option>';
   (s.grades||[]).forEach(function(g){gradeOpts+='<option>'+g+'</option>';});
   return'<div class="filter-bar" style="margin-bottom:20px">'+
-    '<div class="filter-toggle" onclick="this.nextElementSibling.classList.toggle(\'open\')">'+
-    '<div class="filter-toggle-label">'+iconSvg('filter')+' Filters <span id="filter-badge" class="filter-active-badge hidden">Active</span></div>'+
-    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>'+
-    '<div class="filter-body">'+
     '<div class="filter-grid">'+
     '<div><label>Search</label><input type="text" id="f-search" placeholder="Name or phone..."></div>'+
     '<div><label>Teacher</label><select id="f-teacher">'+teacherOpts+'</select></div>'+
@@ -1562,10 +1558,10 @@ function buildFilterBar(){
     '<div><label>From Date</label><input type="date" id="f-from"></div>'+
     '<div><label>To Date</label><input type="date" id="f-to"></div>'+
     '</div>'+
-    '<div class="filter-actions">'+
+    '<div class="filter-actions" style="margin-top:14px">'+
     '<button class="btn btn-orange" onclick="applyFilters()">Apply</button>'+
     '<button class="btn btn-outline" onclick="resetFilters()">Reset</button>'+
-    '</div></div></div>';
+    '</div></div>';
 }
 
 function getFilters(){
