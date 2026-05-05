@@ -82,12 +82,19 @@ input,select,textarea{font-family:inherit;outline:none;border:none}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .card-title{font-size:15px;font-weight:700}
 .card-link{font-size:12px;color:var(--orange);font-weight:600;text-decoration:none;cursor:pointer;background:none;border:none}
+
+/* TABLE: horizontal lines only, no vertical borders */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead tr{background:var(--gray-50);border-bottom:1px solid var(--gray-100)}
-th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
-td{padding:12px 14px;border-bottom:1px solid var(--gray-50);vertical-align:middle;white-space:nowrap}
-tr:hover td{background:var(--gray-50)}tr:last-child td{border-bottom:none}
+thead tr{background:var(--gray-50);border-bottom:2px solid var(--gray-200)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border:none}
+td{padding:12px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;white-space:nowrap;border-left:none;border-right:none}
+tr:last-child td{border-bottom:none}
+
+/* CLICKABLE ROWS */
+tbody tr.clickable-row{cursor:pointer;transition:background .15s}
+tbody tr.clickable-row:hover td{background:#fff7ed}
+
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge-inquiry{background:#f1f5f9;color:#475569}.badge-interested{background:#fef9c3;color:#854d0e}
 .badge-visit{background:#dbeafe;color:#1e40af}.badge-application{background:#ede9fe;color:#5b21b6}
@@ -98,6 +105,7 @@ tr:hover td{background:var(--gray-50)}tr:last-child td{border-bottom:none}
 .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#059669}
 .btn-outline{background:#fff;color:var(--gray-700);border:1.5px solid var(--gray-200)}.btn-outline:hover{background:var(--gray-50)}
 .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2563eb}
 .filter-bar{background:#fff;border-radius:14px;border:1px solid var(--gray-100);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:16px;margin-bottom:20px}
 .filter-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
 .filter-toggle-label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
@@ -126,7 +134,7 @@ tr:hover td{background:var(--gray-50)}tr:last-child td{border-bottom:none}
 .modal-header h3{font-size:16px;font-weight:700}
 .modal-close{background:none;color:var(--gray-400);padding:6px;border-radius:8px}
 .modal-body{padding:24px}.modal-footer{padding:16px 24px;border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:flex-end}
-.side-panel{position:fixed;top:0;right:0;width:100%;max-width:420px;height:100vh;background:#fff;z-index:600;transform:translateX(100%);transition:transform .3s;box-shadow:-8px 0 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
+.side-panel{position:fixed;top:0;right:0;width:100%;max-width:460px;height:100vh;background:#fff;z-index:600;transform:translateX(100%);transition:transform .3s;box-shadow:-8px 0 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
 .side-panel.open{transform:translateX(0)}
 .side-panel-header{padding:20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .side-panel-body{flex:1;overflow-y:auto;padding:20px}
@@ -166,7 +174,14 @@ tr:hover td{background:var(--gray-50)}tr:last-child td{border-bottom:none}
 .audit-PASSWORD_RESET{background:#fff7ed;color:#c2410c}.audit-ACCOUNT_DISABLED,.audit-ACCOUNT_DISABLED{background:#fee2e2;color:#991b1b}
 .audit-ACCOUNT_ACTIVE{background:#d1fae5;color:#065f46}.audit-UPDATE_AREAS{background:#dbeafe;color:#1e40af}
 
-/* BULK ACTION BAR */
+/* ALWAYS-VISIBLE ACTION TOOLBAR */
+.leads-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.leads-toolbar-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.leads-toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.selection-info{font-size:13px;font-weight:600;color:var(--gray-600)}
+.selection-info span{color:var(--orange)}
+
+/* BULK ACTION BAR (replaced by toolbar above) */
 .bulk-bar{position:sticky;top:0;z-index:40;background:#1f2937;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;border-radius:12px;margin-bottom:12px;flex-wrap:wrap}
 .bulk-bar-count{font-size:13px;font-weight:600;flex:1}
 .bulk-bar button{font-size:12px;font-weight:600;padding:7px 14px;border-radius:8px;border:none;cursor:pointer}
@@ -203,6 +218,10 @@ tr:hover td{background:var(--gray-50)}tr:last-child td{border-bottom:none}
 /* CHECKBOX */
 .row-check{width:16px;height:16px;cursor:pointer;accent-color:var(--orange)}
 
+/* PANEL REASSIGN BUTTON */
+.panel-reassign-btn{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;color:var(--blue);border:1.5px solid #bfdbfe;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}
+.panel-reassign-btn:hover{background:#dbeafe;border-color:var(--blue)}
+
 @media(max-width:768px){
   #sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%)}
   #sidebar.open{transform:translateX(0)}
@@ -213,7 +232,6 @@ tr:hover td{background:var(--gray-50)}tr:last-child td{border-bottom:none}
   .filter-grid{grid-template-columns:1fr 1fr}
   .chart-grid{grid-template-columns:1fr}
   .top3-grid{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr}
   #pages-container [style*="grid-template-columns:1fr 1fr"]{display:block !important}
   .side-panel{max-width:100%}
   .page-header-row{flex-direction:column;align-items:flex-start}
@@ -235,6 +253,8 @@ tr:hover td{background:var(--gray-50)}tr:last-child td{border-bottom:none}
   .page-header h1{font-size:18px}
   .page-header p{font-size:12px}
   .visit-cal{grid-template-columns:repeat(3,1fr)}
+  .leads-toolbar{flex-direction:column;align-items:flex-start}
+  .leads-toolbar-right{width:100%;justify-content:flex-end}
 }
 @media(max-width:480px){
   .stat-grid{grid-template-columns:1fr 1fr;gap:10px}
@@ -394,6 +414,7 @@ html,body{overflow-x:hidden}
     <div>
       <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gray-500)" id="panel-id"></div>
       <div id="panel-badge" style="margin-top:4px"></div>
+      <div id="panel-reassign-wrap"></div>
     </div>
     <button class="modal-close" onclick="closePanel()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -533,7 +554,8 @@ var APP = {
   selectedLeadIds:[],
   visitCallback:null,visitSelectedSlot:null,
   reassignLeadIds:[],reassignSelectedTeacherId:null,
-  bulkSelectedSlot:null
+  bulkSelectedSlot:null,
+  currentTableId:null
 };
 
 var CACHE_MS = 5*60*1000;
@@ -597,9 +619,6 @@ function fmtFollowUp(date){
   var od=isOverdue(date);
   return'<span style="font-size:12px;font-weight:600;color:'+(od?'var(--red)':'var(--gray-500)')+'">'+( od?'⚠ ':'')+fmtDate(date)+'</span>';
 }
-function viewBtn(leadId){
-  return'<button class="btn btn-sm btn-outline" onclick="openPanelById(\''+leadId+'\')">View</button>';
-}
 function statCard(title,value,color){
   return'<div class="stat-card"><div><div class="stat-label">'+title+'</div><div class="stat-value">'+value+'</div></div></div>';
 }
@@ -624,7 +643,7 @@ function statusOptions(current){
 // ── INLINE STATUS SELECT ──
 function buildInlineStatusSelect(lead,canEdit){
   if(!canEdit){return statusBadge(lead.status);}
-  return'<select class="inline-status-select" onchange="inlineStatusChange(this,\''+lead.id+'\')" data-current="'+lead.status+'">'+statusOptions(lead.status)+'</select>';
+  return'<select class="inline-status-select" onchange="inlineStatusChange(this,\''+lead.id+'\')" onclick="event.stopPropagation()" data-current="'+lead.status+'">'+statusOptions(lead.status)+'</select>';
 }
 
 async function inlineStatusChange(sel,leadId){
@@ -700,18 +719,21 @@ function confirmVisitSlot(){
   if(cb)cb(date,APP.visitSelectedSlot);
 }
 
-// ── BULK ACTION ──
-function getSelectedIds(){return APP.selectedLeadIds||[];}
-
-function updateBulkBar(tableId){
+// ── TOOLBAR & SELECTION ──
+function updateSelectionInfo(tableId){
   var ids=APP.selectedLeadIds||[];
-  var barId='bulk-bar-'+tableId;
-  var bar=document.getElementById(barId);
-  if(!bar)return;
-  if(ids.length===0){bar.style.display='none';return;}
-  bar.style.display='flex';
-  var countEl=bar.querySelector('.bulk-bar-count');
-  if(countEl)countEl.textContent=ids.length+' lead'+(ids.length>1?'s':'')+' selected';
+  var infoEl=document.getElementById('sel-info-'+tableId);
+  if(infoEl){
+    if(ids.length>0){
+      infoEl.innerHTML='<span>'+ids.length+'</span> lead'+(ids.length>1?'s':'')+' selected';
+      infoEl.style.display='';
+    }else{
+      infoEl.style.display='none';
+    }
+  }
+  // Enable/disable action buttons based on selection
+  var clearBtn=document.getElementById('btn-clear-'+tableId);
+  if(clearBtn)clearBtn.style.display=ids.length>0?'':'none';
 }
 
 function toggleSelectAll(cb,tableId){
@@ -722,7 +744,7 @@ function toggleSelectAll(cb,tableId){
     if(cb.checked&&box.dataset.lid)ids.push(box.dataset.lid);
   });
   APP.selectedLeadIds=ids;
-  updateBulkBar(tableId);
+  updateSelectionInfo(tableId);
 }
 
 function toggleRowSelect(cb,leadId,tableId){
@@ -730,7 +752,7 @@ function toggleRowSelect(cb,leadId,tableId){
   if(cb.checked){if(ids.indexOf(leadId)===-1)ids.push(leadId);}
   else{ids=ids.filter(function(i){return i!==leadId;});}
   APP.selectedLeadIds=ids;
-  updateBulkBar(tableId);
+  updateSelectionInfo(tableId);
 }
 
 function clearSelection(tableId){
@@ -738,7 +760,13 @@ function clearSelection(tableId){
   document.querySelectorAll('#'+tableId+' .row-cb').forEach(function(b){b.checked=false;});
   var allCb=document.getElementById('cb-all-'+tableId);
   if(allCb)allCb.checked=false;
-  updateBulkBar(tableId);
+  updateSelectionInfo(tableId);
+}
+
+function openBulkStatusModalFromToolbar(tableId){
+  var ids=APP.selectedLeadIds||[];
+  if(ids.length===0){toast('Select at least one lead first','error');return;}
+  openBulkStatusModal(tableId);
 }
 
 function openBulkStatusModal(tableId){
@@ -773,7 +801,6 @@ async function applyBulkStatus(){
   var ids=APP.selectedLeadIds||[];
   if(ids.length===0){toast('No leads selected','error');return;}
   closeBulkStatusModal();
-  var btn=null;
   var successCount=0;
   for(var i=0;i<ids.length;i++){
     var lid=ids[i];
@@ -803,6 +830,7 @@ async function applyBulkStatus(){
 
 // ── REASSIGN MODAL ──
 function openReassignModal(leadIds){
+  if(!isAdminOrPrincipal()){toast('Only admin or principal can reassign leads','error');return;}
   if(!leadIds||leadIds.length===0){toast('Select at least one lead','error');return;}
   APP.reassignLeadIds=leadIds;
   APP.reassignSelectedTeacherId=null;
@@ -817,7 +845,6 @@ function closeReassignModal(){document.getElementById('reassign-modal').classLis
 
 function renderTeacherList(search){
   var teachers=APP.teachers.filter(function(t){
-    if(t.id===APP.profile.id&&APP.profile.role==='teacher')return false;
     if(!search)return true;
     return t.full_name.toLowerCase().includes(search.toLowerCase());
   });
@@ -864,6 +891,11 @@ async function confirmReassign(){
   toast(successCount+' lead'+(successCount>1?'s':'')+' reassigned to '+teacher.full_name);
   APP.selectedLeadIds=[];
   APP.reassignLeadIds=[];
+  // Refresh panel if open
+  if(APP.panelLead){
+    var updatedLead=APP.leadsCache.find(function(l){return l.id===APP.panelLead.id;});
+    if(updatedLead){openPanel(updatedLead);}
+  }
   await navigate(APP.currentPage);
 }
 
@@ -1108,26 +1140,52 @@ async function renderPage(page,c){
   else c.innerHTML='<p style="padding:40px;color:var(--gray-400)">Page not found</p>';
 }
 
-// ── LEAD TABLE BUILDER WITH CHECKBOXES ──
-function buildBulkBar(tableId,showReassign){
-  var reassignBtn=showReassign?'<button class="b-reassign" onclick="openReassignModal(APP.selectedLeadIds)">Reassign</button>':'';
-  return'<div class="bulk-bar" id="bulk-bar-'+tableId+'" style="display:none">'+
-    '<span class="bulk-bar-count">0 leads selected</span>'+
-    '<button class="b-status" onclick="openBulkStatusModal(\''+tableId+'\')">Update Status</button>'+
-    reassignBtn+
-    '<button class="b-clear" onclick="clearSelection(\''+tableId+'\')">Clear</button>'+
-    '</div>';
+// ── ALWAYS-VISIBLE LEADS TOOLBAR ──
+// showReassign: only for admin/principal
+function buildLeadsToolbar(tableId,showExport,countId,extraBtns){
+  var canReassign=isAdminOrPrincipal();
+  var html='<div class="leads-toolbar">';
+  html+='<div class="leads-toolbar-left">';
+  html+='<span class="selection-info" id="sel-info-'+tableId+'" style="display:none">0 leads selected</span>';
+  // Status update - everyone can do this
+  html+='<button class="btn btn-orange btn-sm" onclick="openBulkStatusModalFromToolbar(\''+tableId+'\')" title="Update status of selected leads">';
+  html+='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+  html+=' Update Status</button>';
+  // Reassign - only admin/principal
+  if(canReassign){
+    html+='<button class="btn btn-blue btn-sm" onclick="openReassignFromToolbar(\''+tableId+'\')" title="Reassign selected leads to another teacher">';
+    html+='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
+    html+=' Reassign</button>';
+  }
+  html+='<button class="btn btn-outline btn-sm" id="btn-clear-'+tableId+'" onclick="clearSelection(\''+tableId+'\')" style="display:none">Clear</button>';
+  html+='</div>';
+  html+='<div class="leads-toolbar-right">';
+  if(countId){html+='<span style="font-size:13px;color:var(--gray-500);font-weight:500" id="'+countId+'"></span>';}
+  if(extraBtns){html+=extraBtns;}
+  if(showExport){
+    html+='<button class="btn btn-green btn-sm" onclick="exportLeads()">'+iconSvg('download')+' Export</button>';
+  }
+  html+='</div></div>';
+  return html;
 }
 
+function openReassignFromToolbar(tableId){
+  if(!isAdminOrPrincipal()){toast('Only admin or principal can reassign leads','error');return;}
+  var ids=APP.selectedLeadIds||[];
+  if(ids.length===0){toast('Select at least one lead first','error');return;}
+  openReassignModal(ids);
+}
+
+// ── LEAD TABLE BUILDER (no View button, row click opens panel) ──
 function buildLeadRow(l,showTeacher,tableId){
   var canEdit=APP.profile.role==='teacher'?l.teacher_id===APP.profile.id:true;
-  var row='<tr>';
-  row+='<td><input type="checkbox" class="row-check row-cb" data-lid="'+l.id+'" onchange="toggleRowSelect(this,\''+l.id+'\',\''+tableId+'\')"'+(canEdit?'':' disabled')+'></td>';
+  var row='<tr class="clickable-row" onclick="handleRowClick(event,\''+l.id+'\')">';
+  row+='<td onclick="event.stopPropagation()"><input type="checkbox" class="row-check row-cb" data-lid="'+l.id+'" onchange="toggleRowSelect(this,\''+l.id+'\',\''+tableId+'\')"'+(canEdit?'':' disabled')+'></td>';
   row+='<td style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--gray-500)">'+l.lead_id+'</td>';
   row+='<td>'+fmtDate(l.date)+'</td>';
   if(showTeacher){
     if(isAdminOrPrincipal()){
-      row+='<td><span style="cursor:pointer;color:var(--blue);font-weight:600;font-size:12px;text-decoration:underline" onclick="openReassignModal([\''+l.id+'\'])">'+( l.teacher_name||'—')+'</span></td>';
+      row+='<td onclick="event.stopPropagation()"><span style="cursor:pointer;color:var(--blue);font-weight:600;font-size:12px;text-decoration:underline" onclick="openReassignModal([\''+l.id+'\'])">'+( l.teacher_name||'—')+'</span></td>';
     }else{
       row+='<td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
     }
@@ -1137,18 +1195,24 @@ function buildLeadRow(l,showTeacher,tableId){
   row+='<td>'+(l.grade||'—')+'</td>';
   row+='<td>'+(l.area||'')+'</td>';
   if(showTeacher)row+='<td style="font-size:12px">'+(l.source||'')+'</td>';
-  row+='<td>'+buildInlineStatusSelect(l,canEdit)+'</td>';
+  row+='<td onclick="event.stopPropagation()">'+buildInlineStatusSelect(l,canEdit)+'</td>';
   row+='<td>'+fmtFollowUp(l.follow_up_date)+'</td>';
   if(l.visit_date){row+='<td style="font-size:11px;color:var(--blue);font-weight:600">'+fmtDate(l.visit_date)+(l.visit_time?' '+l.visit_time:'')+'</td>';}
   else{row+='<td style="color:var(--gray-300);font-size:12px">—</td>';}
-  row+='<td>'+viewBtn(l.id)+'</td>';
   row+='</tr>';
   return row;
 }
 
+// Row click handler: open panel unless clicked on interactive element
+function handleRowClick(event,leadId){
+  var tag=event.target.tagName.toLowerCase();
+  if(tag==='input'||tag==='select'||tag==='button'||tag==='a')return;
+  openPanelById(leadId);
+}
+
 function buildLeadsTable(leads,showTeacher,tableId){
   if(!leads||leads.length===0){
-    var cols=showTeacher?'13':'11';
+    var cols=showTeacher?'12':'10';
     return'<tr><td colspan="'+cols+'" style="text-align:center;padding:40px;color:var(--gray-400)">No leads found</td></tr>';
   }
   var html='';
@@ -1158,12 +1222,12 @@ function buildLeadsTable(leads,showTeacher,tableId){
 
 function buildTableHeader(showTeacher,tableId){
   var html='<thead><tr>';
-  html+='<th><input type="checkbox" class="row-check" id="cb-all-'+tableId+'" onchange="toggleSelectAll(this,\''+tableId+'\')"></th>';
+  html+='<th style="width:36px"><input type="checkbox" class="row-check" id="cb-all-'+tableId+'" onchange="toggleSelectAll(this,\''+tableId+'\')"></th>';
   html+='<th>Lead ID</th><th>Date</th>';
   if(showTeacher)html+='<th>Teacher</th>';
-  html+='<th>Student</th><th>Parent</th><th>Grade</th><th>Area</th>';
+  html+='<th>Student</th><th>Parent / Phone</th><th>Grade</th><th>Area</th>';
   if(showTeacher)html+='<th>Source</th>';
-  html+='<th>Status</th><th>Follow-up</th><th>Visit</th><th></th>';
+  html+='<th>Status</th><th>Follow-up</th><th>Visit</th>';
   html+='</tr></thead>';
   return html;
 }
@@ -1201,7 +1265,7 @@ async function pgTeacherHome(c){
   if(todayFU.length>0){
     html+='<div class="card"><div class="card-header"><div class="card-title">Today\'s Follow-ups ('+todayFU.length+')</div></div>';
     todayFU.forEach(function(l){
-      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50)">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50);cursor:pointer" onclick="openPanelById(\''+l.id+'\')">';
       html+='<div><div style="font-weight:600;font-size:13px">'+l.student_name+'</div><div style="font-size:11px;color:var(--gray-500)">'+l.parent_phone+' · '+l.area+'</div></div>';
       html+=statusBadge(l.status)+'</div>';
     });
@@ -1212,7 +1276,7 @@ async function pgTeacherHome(c){
     html+='<div style="text-align:center;padding:30px;color:var(--gray-400)"><p style="margin-bottom:12px">No leads yet</p><button class="btn btn-orange btn-sm" onclick="navigate(\'submit-lead\')">Submit First Lead</button></div>';
   }else{
     recent.forEach(function(l){
-      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50)">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50);cursor:pointer" onclick="openPanelById(\''+l.id+'\')">';
       html+='<div style="min-width:0;flex:1;margin-right:10px"><div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.student_name+'</div>';
       html+='<div style="font-size:11px;color:var(--gray-500)">'+l.parent_name+' · '+l.area+' · '+fmtDate(l.date)+'</div></div>';
       html+=statusBadge(l.status)+'</div>';
@@ -1326,11 +1390,13 @@ async function pgMyLeads(c){
   var leads=all.filter(function(l){return l.teacher_id===APP.profile.id;});
   window._myLeads=leads;
   var tableId='ml-table';
+  APP.currentTableId=tableId;
   var statusOpts='<option>All</option>';
   ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'].forEach(function(s){statusOpts+='<option>'+s+'</option>';});
-  var html='<div class="page-header-row"><div><h1>My Leads</h1><p>'+leads.length+' total leads</p></div></div>';
-  html+=buildBulkBar(tableId,false);
-  html+='<div class="card" style="padding:14px"><div style="display:flex;gap:10px;flex-wrap:wrap">';
+
+  var html='<div class="page-header-row"><div><h1>My Leads</h1></div></div>';
+  html+=buildLeadsToolbar(tableId,false,'ml-count','');
+  html+='<div class="card" style="padding:14px;margin-bottom:14px"><div style="display:flex;gap:10px;flex-wrap:wrap">';
   html+='<div style="flex:1;min-width:180px"><input type="text" id="ml-search" placeholder="Search by name or phone..." style="width:100%;border:1.5px solid var(--gray-200);border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit" oninput="filterMyLeads()"></div>';
   html+='<select id="ml-status" style="border:1.5px solid var(--gray-200);border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit;background:#fff" onchange="filterMyLeads()">'+statusOpts+'</select>';
   html+='</div></div>';
@@ -1339,6 +1405,7 @@ async function pgMyLeads(c){
   html+='<tbody id="ml-tbody">'+buildLeadsTable(leads,false,tableId)+'</tbody>';
   html+='</table></div></div>';
   c.innerHTML=html;
+  document.getElementById('ml-count').textContent=leads.length+' leads';
 }
 
 function filterMyLeads(){
@@ -1354,6 +1421,8 @@ function filterMyLeads(){
   });
   var tb=document.getElementById('ml-tbody');
   if(tb)tb.innerHTML=buildLeadsTable(r,false,'ml-table');
+  var cnt=document.getElementById('ml-count');
+  if(cnt)cnt.textContent=r.length+' leads';
 }
 
 // ── MY PERFORMANCE ──
@@ -1437,14 +1506,15 @@ async function pgPrincipalHome(c){
   if(overdue.length>0){
     html+='<div class="alert alert-red"><div class="alert-header">'+iconSvg('alert')+' Overdue ('+overdue.length+')</div>';
     overdue.slice(0,4).forEach(function(l){
-      html+='<div class="overdue-row"><div><div style="font-weight:600;font-size:13px">'+l.student_name+'</div><div style="font-size:11px;color:var(--gray-500)">'+l.teacher_name+' · '+l.area+'</div></div>';
+      html+='<div class="overdue-row" style="cursor:pointer" onclick="openPanelById(\''+l.id+'\')">';
+      html+='<div><div style="font-weight:600;font-size:13px">'+l.student_name+'</div><div style="font-size:11px;color:var(--gray-500)">'+l.teacher_name+' · '+l.area+'</div></div>';
       html+='<div style="text-align:right">'+statusBadge(l.status)+'<div style="font-size:11px;color:var(--red);margin-top:3px">'+fmtDate(l.follow_up_date)+'</div></div></div>';
     });
     html+='</div>';
   }else{html+='<div></div>';}
   html+='<div class="card"><div class="card-header"><div class="card-title">Recent Activity</div><button class="card-link" onclick="navigate(\'all-leads\')">View all</button></div>';
   recent.forEach(function(l){
-    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-50)">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-50);cursor:pointer" onclick="openPanelById(\''+l.id+'\')">';
     html+='<div style="min-width:0;flex:1;margin-right:10px"><div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.student_name+'</div>';
     html+='<div style="font-size:11px;color:var(--gray-400)">'+(l.teacher_name||'')+' · '+l.area+'</div></div>';
     html+=statusBadge(l.status)+'</div>';
@@ -1596,9 +1666,8 @@ function drawTeacherPerf(leads){
     html+='</div>';
   }
   html+='<div class="card"><div class="card-title" style="margin-bottom:14px">Leads vs Admissions</div><div style="height:220px"><canvas id="ch-tbar"></canvas></div></div>';
-  html+='<div class="card"><div class="card-header"><div class="card-title">Complete Report</div>';
-  if(isAdminOrPrincipal()){html+='<button class="btn btn-sm btn-outline" onclick="openReassignModal(APP.selectedLeadIds)" style="display:none" id="tp-reassign-btn">Reassign Selected</button>';}
-  html+='</div><div class="table-wrap"><table>';
+  html+='<div class="card"><div class="card-header"><div class="card-title">Complete Report</div></div>';
+  html+='<div class="table-wrap"><table>';
   html+='<thead><tr><th>#</th><th>Teacher</th><th>Areas</th><th>Total</th><th>Admitted</th><th>Dropped</th><th>Active</th><th>Rate</th></tr></thead><tbody>';
   stats.forEach(function(t,i){
     html+='<tr><td style="color:var(--gray-400);font-weight:700">#'+(i+1)+'</td>';
@@ -1669,14 +1738,14 @@ function toggleDrill(area){
   row.classList.remove('hidden');if(tog)tog.textContent='Hide ▲';
   var html='<div style="background:var(--orange-light);border:1.5px solid #fed7aa;border-radius:10px;margin:8px;padding:14px">';
   html+='<div style="font-weight:700;color:#9a3412;margin-bottom:10px;font-size:13px">Leads from '+area+' ('+ls.length+')</div>';
-  html+='<div class="table-wrap"><table><thead><tr><th>Lead ID</th><th>Student</th><th>Parent</th><th>Teacher</th><th>Status</th><th></th></tr></thead><tbody>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Lead ID</th><th>Student</th><th>Parent</th><th>Teacher</th><th>Status</th></tr></thead><tbody>';
   ls.forEach(function(l){
-    html+='<tr><td style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--gray-500)">'+l.lead_id+'</td>';
+    html+='<tr class="clickable-row" onclick="openPanelById(\''+l.id+'\')">';
+    html+='<td style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--gray-500)">'+l.lead_id+'</td>';
     html+='<td style="font-weight:600">'+l.student_name+'</td>';
     html+='<td>'+l.parent_name+'</td>';
     html+='<td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
-    html+='<td>'+statusBadge(l.status)+'</td>';
-    html+='<td>'+viewBtn(l.id)+'</td></tr>';
+    html+='<td>'+statusBadge(l.status)+'</td></tr>';
   });
   html+='</tbody></table></div></div>';
   row.querySelector('td').innerHTML=html;
@@ -1708,7 +1777,8 @@ function drawFunnel(leads){
     html+='<div class="alert alert-yellow"><div class="alert-header">'+iconSvg('clock')+' Stuck Leads — 7+ Days ('+stuck.length+')</div>';
     html+='<div class="table-wrap"><table><thead><tr><th>Student</th><th>Teacher</th><th>Area</th><th>Status</th><th>Due Date</th></tr></thead><tbody>';
     stuck.slice(0,8).forEach(function(l){
-      html+='<tr><td style="font-weight:600">'+l.student_name+'</td><td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
+      html+='<tr class="clickable-row" onclick="openPanelById(\''+l.id+'\')">';
+      html+='<td style="font-weight:600">'+l.student_name+'</td><td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
       html+='<td>'+l.area+'</td><td>'+statusBadge(l.status)+'</td>';
       html+='<td style="color:var(--red);font-size:12px;font-weight:600">'+l.follow_up_date+'</td></tr>';
     });
@@ -1724,23 +1794,18 @@ function drawFunnel(leads){
 // ── ALL LEADS ──
 async function pgAllLeads(c){
   var tableId='al-table';
+  APP.currentTableId=tableId;
   window._allLeads=APP.leadsCache;
+  var exportBtn='<button class="btn btn-green btn-sm" onclick="exportLeads()">'+iconSvg('download')+' Export Excel</button>';
   var html=buildFilterBar();
-  html+='<div class="page-header-row">';
-  html+='<div><h1>All Leads</h1><p id="al-count">'+APP.leadsCache.length+' leads</p></div>';
-  html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  if(isAdminOrPrincipal()){
-    html+='<button class="btn btn-outline" onclick="openReassignModal(APP.selectedLeadIds)">Reassign Selected</button>';
-    html+='<button class="btn btn-orange" onclick="openBulkStatusModal(\''+tableId+'\')">Update Selected</button>';
-  }
-  html+='<button class="btn btn-green" onclick="exportLeads()">'+iconSvg('download')+' Export Excel</button>';
-  html+='</div></div>';
-  html+=buildBulkBar(tableId,true);
+  html+='<div class="page-header-row"><div><h1>All Leads</h1></div></div>';
+  html+=buildLeadsToolbar(tableId,false,'al-count',exportBtn);
   html+='<div class="card" style="padding:0"><div class="table-wrap"><table id="'+tableId+'">';
   html+=buildTableHeader(true,tableId);
   html+='<tbody id="al-tbody">'+buildLeadsTable(APP.leadsCache,true,tableId)+'</tbody>';
   html+='</table></div></div>';
   c.innerHTML=html;
+  document.getElementById('al-count').textContent=APP.leadsCache.length+' leads';
 }
 
 function exportLeads(){
@@ -1766,10 +1831,10 @@ async function pgVisitCalendar(c){
   html+='<div style="display:flex;gap:8px"><button class="btn btn-outline" onclick="shiftWeek(-1)">← Prev</button><button class="btn btn-outline" onclick="shiftWeek(1)">Next →</button></div></div>';
   html+='<div id="cal-wrap"></div>';
   html+='<div class="card" style="margin-top:20px"><div class="card-header"><div class="card-title">All Scheduled Visits</div></div>';
-  html+='<div class="table-wrap"><table><thead><tr><th>Visit Date</th><th>Time Slot</th><th>Student</th><th>Parent</th><th>Phone</th>'+(role!=='teacher'?'<th>Teacher</th>':'')+'<th>Area</th><th></th></tr></thead><tbody>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Visit Date</th><th>Time Slot</th><th>Student</th><th>Parent</th><th>Phone</th>'+(role!=='teacher'?'<th>Teacher</th>':'')+'<th>Area</th></tr></thead><tbody>';
   var sorted=visitable.slice().sort(function(a,b){return(a.visit_date>b.visit_date)?1:-1;});
   sorted.forEach(function(l){
-    html+='<tr>';
+    html+='<tr class="clickable-row" onclick="openPanelById(\''+l.id+'\')">';
     html+='<td style="font-weight:600;color:var(--blue)">'+fmtDate(l.visit_date)+'</td>';
     html+='<td><span style="background:var(--orange-light);color:var(--orange);padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600">'+(l.visit_time||'—')+'</span></td>';
     html+='<td style="font-weight:600">'+l.student_name+'</td>';
@@ -1777,10 +1842,9 @@ async function pgVisitCalendar(c){
     html+='<td style="font-size:12px;color:var(--gray-500)">'+l.parent_phone+'</td>';
     if(role!=='teacher')html+='<td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
     html+='<td>'+l.area+'</td>';
-    html+='<td>'+viewBtn(l.id)+'</td>';
     html+='</tr>';
   });
-  if(sorted.length===0)html+='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray-400)">No visits scheduled yet</td></tr>';
+  if(sorted.length===0)html+='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400)">No visits scheduled yet</td></tr>';
   html+='</tbody></table></div></div>';
   c.innerHTML=html;
 
@@ -2026,6 +2090,19 @@ function openPanel(lead){
   APP.panelLead=lead;
   document.getElementById('panel-id').textContent=lead.lead_id;
   document.getElementById('panel-badge').innerHTML=statusBadge(lead.status);
+
+  // Reassign button in panel header (admin/principal only)
+  var reassignWrap=document.getElementById('panel-reassign-wrap');
+  if(reassignWrap){
+    if(isAdminOrPrincipal()){
+      reassignWrap.innerHTML='<button class="panel-reassign-btn" onclick="openReassignModal([\''+lead.id+'\'])" style="margin-top:6px">'+
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>'+
+        ' Reassign Teacher</button>';
+    }else{
+      reassignWrap.innerHTML='';
+    }
+  }
+
   var s=APP.settings||{};
   var statuses=s.statuses||['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
   var canEdit=APP.profile.role==='teacher'?lead.teacher_id===APP.profile.id:true;
@@ -2035,7 +2112,7 @@ function openPanel(lead){
     {label:'Grade',value:lead.grade},{label:'Current School',value:lead.current_school},
     {label:'Area',value:lead.area},{label:'Source',value:lead.source},
     {label:'Date',value:fmtDate(lead.date)},
-    {label:'Teacher',value:isAdminOrPrincipal()?'<span style="color:var(--blue);cursor:pointer;text-decoration:underline;font-weight:600" onclick="openReassignModal([\''+lead.id+'\'])">'+( lead.teacher_name||'—')+'</span>':lead.teacher_name}
+    {label:'Teacher',value:lead.teacher_name||'—'}
   ];
   var html='<div class="info-grid">';
   fields.forEach(function(f){
