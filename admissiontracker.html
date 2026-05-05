@@ -15,12 +15,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--gray-50);color:var(--gray
 button{cursor:pointer;font-family:inherit;border:none;outline:none}
 input,select,textarea{font-family:inherit;outline:none;border:none}
 #toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
-.toast{padding:12px 18px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;animation:slideIn .3s ease;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.15)}
-.toast.success{background:var(--green)}.toast.error{background:var(--red)}.toast.info{background:var(--blue)}
+.toast{padding:12px 18px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;animation:slideIn .3s ease;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,.15);display:flex;align-items:flex-start;gap:10px}
+.toast.success{background:var(--green)}.toast.error{background:var(--red)}.toast.info{background:var(--blue)}.toast.warning{background:var(--yellow);color:#111}
+.toast-content{flex:1}.toast-title{font-weight:700;margin-bottom:2px}.toast-msg{font-size:12px;font-weight:400;opacity:.9}
+.toast-actions{display:flex;gap:6px;margin-top:8px}
+.toast-btn{background:rgba(255,255,255,.25);border:none;color:inherit;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer}
+.toast-btn:hover{background:rgba(255,255,255,.4)}
 @keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
 #global-loading{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9998;flex-direction:column;gap:12px}
 .spinner{width:40px;height:40px;border:4px solid var(--gray-200);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── OFFLINE BANNER ── */
+#offline-banner{position:fixed;top:0;left:0;right:0;z-index:9997;background:#1f2937;color:#fff;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:600}
+#offline-banner.show{display:flex}
+.offline-left{display:flex;align-items:center;gap:10px}
+.offline-dot{width:10px;height:10px;border-radius:50%;background:var(--red);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.offline-queue-count{background:var(--orange);color:#fff;padding:2px 8px;border-radius:20px;font-size:11px}
+.retry-btn{background:var(--blue);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+
 .auth-bg{min-height:100vh;background:linear-gradient(135deg,#111827 0%,#1f2937 50%,#111827 100%);display:flex;align-items:center;justify-content:center;padding:20px}
 .auth-card{background:#fff;border-radius:24px;padding:40px;width:100%;max-width:420px;box-shadow:0 32px 80px rgba(0,0,0,.3)}
 .auth-logo{text-align:center;margin-bottom:28px}
@@ -40,8 +54,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none}
 .auth-link{text-align:right;margin-bottom:16px}.auth-link a{color:var(--orange);font-size:13px;font-weight:600;text-decoration:none}
 .error-box{background:#fef2f2;border:1.5px solid #fecaca;color:#b91c1c;border-radius:10px;padding:10px 14px;font-size:13px;margin-bottom:16px}
 .demo-box{background:var(--gray-50);border-radius:10px;padding:14px;margin-top:20px;font-size:12px;color:var(--gray-500)}
-.demo-box strong{display:block;color:var(--gray-600);margin-bottom:8px}
-.demo-box p{margin-bottom:4px}
+.demo-box strong{display:block;color:var(--gray-600);margin-bottom:8px}.demo-box p{margin-bottom:4px}
 .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--gray-500);font-size:13px;font-weight:500;text-decoration:none;margin-bottom:20px}
 #app-shell{display:flex;height:100vh;overflow:hidden}
 #sidebar{width:var(--sidebar-w);background:var(--gray-900);color:#fff;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;z-index:100;transition:transform .3s}
@@ -65,6 +78,7 @@ input,select,textarea{font-family:inherit;outline:none;border:none}
 .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--gray-400);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
 .nav-item:hover{background:var(--gray-800);color:#fff}.nav-item.active{background:var(--orange);color:#fff}
 .nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:auto}
 .sidebar-footer{padding:12px;border-top:1px solid var(--gray-800)}
 .logout-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--gray-400);font-size:13px;font-weight:500;cursor:pointer;background:none;border:none;width:100%;transition:all .2s}
 .logout-btn:hover{background:#3f1e1e;color:#fca5a5}
@@ -82,18 +96,18 @@ input,select,textarea{font-family:inherit;outline:none;border:none}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .card-title{font-size:15px;font-weight:700}
 .card-link{font-size:12px;color:var(--orange);font-weight:600;text-decoration:none;cursor:pointer;background:none;border:none}
-
-/* TABLE: horizontal lines only, no vertical borders */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead tr{background:var(--gray-50);border-bottom:2px solid var(--gray-200)}
 th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border:none}
 td{padding:12px 14px;border-bottom:1px solid var(--gray-100);vertical-align:middle;white-space:nowrap;border-left:none;border-right:none}
 tr:last-child td{border-bottom:none}
-
-/* CLICKABLE ROWS */
 tbody tr.clickable-row{cursor:pointer;transition:background .15s}
 tbody tr.clickable-row:hover td{background:#fff7ed}
+
+/* OVERDUE ROW HIGHLIGHT */
+tbody tr.overdue-lead td{background:#fff5f5}
+tbody tr.overdue-lead:hover td{background:#fee2e2}
 
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
 .badge-inquiry{background:#f1f5f9;color:#475569}.badge-interested{background:#fef9c3;color:#854d0e}
@@ -107,11 +121,6 @@ tbody tr.clickable-row:hover td{background:#fff7ed}
 .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
 .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2563eb}
 .filter-bar{background:#fff;border-radius:14px;border:1px solid var(--gray-100);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:16px;margin-bottom:20px}
-.filter-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-.filter-toggle-label{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
-.filter-active-badge{background:var(--orange);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
-.filter-body{display:none;border-top:1px solid var(--gray-100);margin-top:14px;padding-top:14px}
-.filter-body.open{display:block}
 .filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px}
 .filter-grid label{display:block;font-size:11px;font-weight:600;color:var(--gray-500);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .filter-grid input,.filter-grid select{width:100%;border:1.5px solid var(--gray-200);border-radius:9px;padding:8px 12px;font-size:13px;background:#fff;font-family:inherit}
@@ -134,15 +143,27 @@ tbody tr.clickable-row:hover td{background:#fff7ed}
 .modal-header h3{font-size:16px;font-weight:700}
 .modal-close{background:none;color:var(--gray-400);padding:6px;border-radius:8px}
 .modal-body{padding:24px}.modal-footer{padding:16px 24px;border-top:1px solid var(--gray-100);display:flex;gap:8px;justify-content:flex-end}
-.side-panel{position:fixed;top:0;right:0;width:100%;max-width:460px;height:100vh;background:#fff;z-index:600;transform:translateX(100%);transition:transform .3s;box-shadow:-8px 0 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
+
+/* ── COLLAPSIBLE SIDE PANEL ── */
+.side-panel{position:fixed;top:0;right:0;width:100%;max-width:480px;height:100vh;background:#fff;z-index:600;transform:translateX(100%);transition:transform .3s;box-shadow:-8px 0 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
 .side-panel.open{transform:translateX(0)}
 .side-panel-header{padding:20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.side-panel-body{flex:1;overflow-y:auto;padding:20px}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.side-panel-body{flex:1;overflow-y:auto;padding:0}
+
+/* Collapsible sections */
+.panel-section{border-bottom:1px solid var(--gray-100)}
+.panel-section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;transition:background .15s}
+.panel-section-header:hover{background:var(--gray-50)}
+.panel-section-title{font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:8px}
+.panel-section-chevron{transition:transform .25s;color:var(--gray-400)}
+.panel-section-chevron.open{transform:rotate(180deg)}
+.panel-section-body{padding:16px 20px;display:block}
+.panel-section-body.collapsed{display:none}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .info-cell{background:var(--gray-50);border-radius:10px;padding:12px}
 .info-cell-label{font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}
 .info-cell-value{font-size:13px;font-weight:600;color:var(--gray-900);word-break:break-word}
-.update-section{border-top:1px solid var(--gray-100);padding-top:16px}
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
 .chart-container{position:relative;height:240px}
 .area-checkbox-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:240px;overflow-y:auto}
@@ -171,56 +192,55 @@ tbody tr.clickable-row:hover td{background:#fff7ed}
 .dup-warn{background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:14px;margin-bottom:16px;display:flex;gap:10px;font-size:13px}
 .audit-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
 .audit-LOGIN{background:#d1fae5;color:#065f46}.audit-LOGOUT{background:var(--gray-100);color:var(--gray-600)}
-.audit-PASSWORD_RESET{background:#fff7ed;color:#c2410c}.audit-ACCOUNT_DISABLED,.audit-ACCOUNT_DISABLED{background:#fee2e2;color:#991b1b}
+.audit-PASSWORD_RESET{background:#fff7ed;color:#c2410c}.audit-ACCOUNT_DISABLED{background:#fee2e2;color:#991b1b}
 .audit-ACCOUNT_ACTIVE{background:#d1fae5;color:#065f46}.audit-UPDATE_AREAS{background:#dbeafe;color:#1e40af}
-
-/* ALWAYS-VISIBLE ACTION TOOLBAR */
+.audit-DELETE_LEAD{background:#fee2e2;color:#991b1b}.audit-ADD_USER{background:#d1fae5;color:#065f46}
 .leads-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .leads-toolbar-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .leads-toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .selection-info{font-size:13px;font-weight:600;color:var(--gray-600)}
 .selection-info span{color:var(--orange)}
-
-/* BULK ACTION BAR (replaced by toolbar above) */
-.bulk-bar{position:sticky;top:0;z-index:40;background:#1f2937;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;border-radius:12px;margin-bottom:12px;flex-wrap:wrap}
-.bulk-bar-count{font-size:13px;font-weight:600;flex:1}
-.bulk-bar button{font-size:12px;font-weight:600;padding:7px 14px;border-radius:8px;border:none;cursor:pointer}
-.bulk-bar .b-status{background:var(--orange);color:#fff}
-.bulk-bar .b-reassign{background:#3b82f6;color:#fff}
-.bulk-bar .b-clear{background:transparent;color:var(--gray-400);border:1px solid var(--gray-600)}
-
-/* INLINE STATUS SELECT */
 .inline-status-select{border:1.5px solid var(--gray-200);border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit;background:#fff;cursor:pointer;color:var(--gray-900)}
 .inline-status-select:focus{border-color:var(--orange);outline:none}
-
-/* VISIT CALENDAR */
 .visit-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px}
 .visit-day{background:#fff;border:1px solid var(--gray-100);border-radius:12px;padding:10px;min-height:80px}
 .visit-day-label{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;margin-bottom:6px}
 .visit-day-date{font-size:18px;font-weight:700;margin-bottom:6px}
 .visit-chip{background:var(--orange-light);color:var(--orange);font-size:10px;font-weight:600;padding:2px 6px;border-radius:6px;margin-bottom:3px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .visit-chip:hover{background:#fed7aa}
-
-/* TEACHER SEARCH IN REASSIGN */
 .teacher-option{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray-200);cursor:pointer;margin-bottom:6px;transition:all .2s}
 .teacher-option:hover{border-color:var(--orange);background:var(--orange-light)}
 .teacher-option.selected{border-color:var(--orange);background:var(--orange-light)}
 .teacher-option-name{font-weight:600;font-size:13px}
 .teacher-option-meta{font-size:11px;color:var(--gray-500);margin-top:2px}
 .teacher-option-count{font-size:12px;font-weight:700;color:var(--blue)}
-
-/* TIME SLOT GRID */
 .slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
 .slot-btn{padding:10px;border-radius:10px;border:1.5px solid var(--gray-200);background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
 .slot-btn:hover{border-color:var(--orange);background:var(--orange-light)}
 .slot-btn.selected{border-color:var(--orange);background:var(--orange);color:#fff}
-
-/* CHECKBOX */
 .row-check{width:16px;height:16px;cursor:pointer;accent-color:var(--orange)}
-
-/* PANEL REASSIGN BUTTON */
 .panel-reassign-btn{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;color:var(--blue);border:1.5px solid #bfdbfe;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}
 .panel-reassign-btn:hover{background:#dbeafe;border-color:var(--blue)}
+
+/* OVERDUE PAGE */
+.overdue-card{background:#fff;border:1.5px solid #fecaca;border-radius:14px;padding:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;transition:all .2s}
+.overdue-card:hover{background:#fff5f5;border-color:#f87171}
+.overdue-days{background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+
+/* DELETE CONFIRM */
+.delete-confirm-box{background:#fef2f2;border:2px solid #fecaca;border-radius:14px;padding:20px;text-align:center;margin-bottom:16px}
+.delete-confirm-box .dc-icon{font-size:40px;margin-bottom:12px}
+.delete-confirm-box h4{font-size:16px;font-weight:700;color:#b91c1c;margin-bottom:6px}
+.delete-confirm-box p{font-size:13px;color:var(--gray-600)}
+
+/* RETRY QUEUE UI */
+.retry-item{background:#fff;border:1px solid var(--gray-200);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.retry-item-info{font-size:12px;color:var(--gray-600)}
+.retry-item-name{font-weight:700;font-size:13px;color:var(--gray-900)}
+.retry-status{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+.retry-status.pending{background:#fffbeb;color:#92400e}
+.retry-status.retrying{background:#dbeafe;color:#1e40af}
+.retry-status.failed{background:#fee2e2;color:#991b1b}
 
 @media(max-width:768px){
   #sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%)}
@@ -232,70 +252,47 @@ tbody tr.clickable-row:hover td{background:#fff7ed}
   .filter-grid{grid-template-columns:1fr 1fr}
   .chart-grid{grid-template-columns:1fr}
   .top3-grid{grid-template-columns:1fr}
-  #pages-container [style*="grid-template-columns:1fr 1fr"]{display:block !important}
   .side-panel{max-width:100%}
   .page-header-row{flex-direction:column;align-items:flex-start}
-  .page-header-row .btn{width:100%;justify-content:center}
-  .stat-card{padding:14px}
-  .stat-value{font-size:22px}
-  .auth-card{padding:28px 20px}
-  .quick-links{grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}
-  .table-wrap{border-radius:12px}
-  .overlay{padding:12px}
-  .modal{border-radius:16px}
-  .filter-actions{flex-wrap:wrap}
-  .filter-actions .btn{flex:1;justify-content:center;min-width:100px}
-  .area-checkbox-grid{grid-template-columns:1fr}
   .info-grid{grid-template-columns:1fr}
-  .overdue-row{flex-wrap:wrap;gap:8px}
-  .overdue-row > div:last-child{width:100%;display:flex;align-items:center;justify-content:space-between}
-  .chart-container{height:200px}
-  .page-header h1{font-size:18px}
-  .page-header p{font-size:12px}
+  .area-checkbox-grid{grid-template-columns:1fr}
   .visit-cal{grid-template-columns:repeat(3,1fr)}
   .leads-toolbar{flex-direction:column;align-items:flex-start}
   .leads-toolbar-right{width:100%;justify-content:flex-end}
+  .form-row{grid-template-columns:1fr}
 }
 @media(max-width:480px){
   .stat-grid{grid-template-columns:1fr 1fr;gap:10px}
   .stat-card{padding:12px;flex-direction:column;gap:8px}
-  .stat-value{font-size:20px}
-  .stat-label{font-size:10px}
   .filter-grid{grid-template-columns:1fr}
-  .quick-links{grid-template-columns:repeat(3,1fr);gap:8px}
-  .quick-link{padding:12px 8px}
-  .quick-link span{font-size:11px}
-  .page-header-row .btn,.page-header-row button{width:100%;justify-content:center}
-  .auth-card{padding:24px 16px;border-radius:18px}
-  .auth-logo-icon{width:50px;height:50px}
-  .auth-brand{font-size:22px}
+  .top3-grid{grid-template-columns:1fr}
   #toast-container{top:auto;bottom:16px;left:16px;right:16px}
-  .toast{max-width:100%;text-align:center}
+  .toast{max-width:100%}
   table{font-size:12px}
   th{padding:8px 10px;font-size:10px}
   td{padding:10px 10px}
-  .side-panel-header{padding:16px}
-  .side-panel-body{padding:16px}
-  .card{padding:16px}
+  .visit-cal{grid-template-columns:repeat(2,1fr)}
+  .slot-grid{grid-template-columns:repeat(2,1fr)}
   .modal-body{padding:16px}
   .modal-footer{padding:12px 16px}
   .modal-header{padding:16px}
-  .modal-header h3{font-size:15px}
-  .nav-item{padding:12px}
-  .chart-container{height:180px}
-  .info-grid{grid-template-columns:1fr}
-  .logout-btn{padding:12px}
-  .form-group input,.form-group select,.form-group textarea{font-size:16px;padding:12px 14px}
-  .filter-grid input,.filter-grid select{font-size:16px;padding:10px 12px}
-  #aa-content table{font-size:11px}
-  .slot-grid{grid-template-columns:repeat(2,1fr)}
-  .visit-cal{grid-template-columns:repeat(2,1fr)}
 }
 html,body{overflow-x:hidden}
 #app-shell{overflow-x:hidden}
 </style>
 </head>
 <body>
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner">
+  <div class="offline-left">
+    <div class="offline-dot"></div>
+    <span>You're offline — leads will be saved locally</span>
+    <span class="offline-queue-count" id="queue-badge" style="display:none">0 pending</span>
+  </div>
+  <button class="retry-btn" onclick="retryQueue()">Retry Now</button>
+</div>
+
 <div id="toast-container"></div>
 <div id="global-loading">
   <div class="spinner"></div>
@@ -362,10 +359,7 @@ html,body{overflow-x:hidden}
         <h2>Reset Password</h2>
         <p style="color:#6b7280;font-size:13px;margin-bottom:20px">Enter your email and we will send a reset link.</p>
         <div id="forgot-error" class="error-box hidden"></div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="forgot-email" placeholder="you@school.in">
-        </div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="forgot-email" placeholder="you@school.in"></div>
         <button class="btn-primary" id="forgot-btn" onclick="doForgot()">Send Reset Link</button>
       </div>
     </div>
@@ -416,9 +410,12 @@ html,body{overflow-x:hidden}
       <div id="panel-badge" style="margin-top:4px"></div>
       <div id="panel-reassign-wrap"></div>
     </div>
-    <button class="modal-close" onclick="closePanel()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div id="panel-delete-wrap"></div>
+      <button class="modal-close" onclick="closePanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
   </div>
   <div class="side-panel-body" id="panel-body"></div>
 </div>
@@ -447,6 +444,86 @@ html,body{overflow-x:hidden}
   </div>
 </div>
 
+<!-- ADD USER MODAL -->
+<div class="overlay" id="add-user-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h3>Add New User</h3>
+      <button class="modal-close" onclick="closeAddUserModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="add-user-error" class="error-box hidden"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name *</label><input type="text" id="au-name" placeholder="e.g. Priya Sharma"></div>
+        <div class="form-group"><label>Role *</label>
+          <select id="au-role" onchange="onAddUserRoleChange()">
+            <option value="">Select role...</option>
+            <option value="teacher">Teacher</option>
+            <option value="principal">Principal</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Email *</label><input type="email" id="au-email" placeholder="user@school.in"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="au-phone" placeholder="10-digit number" maxlength="10"></div>
+      </div>
+      <div class="form-group"><label>Temporary Password *</label>
+        <div class="input-wrap">
+          <input type="password" id="au-pass" placeholder="Min 8 chars, must include number">
+          <button class="eye-btn" onclick="toggleAuPass()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="au-areas-section" class="hidden">
+        <div class="form-section-header">Assign Areas</div>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Select areas this teacher will manage:</p>
+        <div class="area-checkbox-grid" id="au-area-grid"></div>
+        <div style="margin-top:8px;font-size:12px;color:var(--orange);font-weight:600" id="au-area-selected"></div>
+      </div>
+      <div class="alert alert-blue" style="margin-top:8px">
+        <div style="font-size:12px;color:#1e40af">
+          ℹ An invitation email will be sent. The user can change their password after first login. Make sure the email is correct.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAddUserModal()">Cancel</button>
+      <button class="btn btn-orange" id="add-user-btn" onclick="submitAddUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE LEAD MODAL -->
+<div class="overlay" id="delete-lead-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3>Delete Lead</h3>
+      <button class="modal-close" onclick="closeDeleteModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-confirm-box">
+        <div class="dc-icon">🗑️</div>
+        <h4>Permanently Delete This Lead?</h4>
+        <p id="delete-lead-desc">This cannot be undone. All history will also be removed.</p>
+      </div>
+      <div class="form-group">
+        <label>Type <strong>DELETE</strong> to confirm</label>
+        <input type="text" id="delete-confirm-input" placeholder="Type DELETE here" style="font-family:'DM Mono',monospace;letter-spacing:1px">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-red" id="confirm-delete-btn" onclick="confirmDeleteLead()">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
 <!-- VISIT SLOT MODAL -->
 <div class="overlay" id="visit-modal">
   <div class="modal" style="max-width:420px">
@@ -458,14 +535,8 @@ html,body{overflow-x:hidden}
     </div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Select a date and time slot for the visit.</p>
-      <div class="form-group">
-        <label>Visit Date *</label>
-        <input type="date" id="visit-date-input" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px">
-      </div>
-      <div class="form-group">
-        <label>Time Slot *</label>
-        <div class="slot-grid" id="slot-grid"></div>
-      </div>
+      <div class="form-group"><label>Visit Date *</label><input type="date" id="visit-date-input" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px"></div>
+      <div class="form-group"><label>Time Slot *</label><div class="slot-grid" id="slot-grid"></div></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeVisitModal(true)">Cancel</button>
@@ -485,27 +556,17 @@ html,body{overflow-x:hidden}
     </div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px" id="bulk-status-count"></p>
-      <div class="form-group">
-        <label>New Status *</label>
+      <div class="form-group"><label>New Status *</label>
         <select id="bulk-status-select" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px;background:#fff;font-family:inherit" onchange="onBulkStatusChange(this.value)">
           <option value="">Select status...</option>
           <option>Inquiry</option><option>Interested</option><option>Visit Scheduled</option>
           <option>Application</option><option>Fee Paid</option><option>Admitted</option><option>Dropped</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Follow-up Date (optional)</label>
-        <input type="date" id="bulk-followup-input" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px">
-      </div>
+      <div class="form-group"><label>Follow-up Date (optional)</label><input type="date" id="bulk-followup-input" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px"></div>
       <div id="bulk-visit-section" class="hidden">
-        <div class="form-group">
-          <label>Visit Date *</label>
-          <input type="date" id="bulk-visit-date" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px">
-        </div>
-        <div class="form-group">
-          <label>Time Slot *</label>
-          <div class="slot-grid" id="bulk-slot-grid"></div>
-        </div>
+        <div class="form-group"><label>Visit Date *</label><input type="date" id="bulk-visit-date" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px"></div>
+        <div class="form-group"><label>Time Slot *</label><div class="slot-grid" id="bulk-slot-grid"></div></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -554,26 +615,170 @@ var APP = {
   selectedLeadIds:[],
   visitCallback:null,visitSelectedSlot:null,
   reassignLeadIds:[],reassignSelectedTeacherId:null,
-  bulkSelectedSlot:null,
-  currentTableId:null
+  bulkSelectedSlot:null,currentTableId:null,
+  panelSelectedSlot:null,
+  addUserSelectedAreas:[],
+  pendingDeleteLeadId:null,
+  isOnline:navigator.onLine,
+  offlineQueue:[]
 };
 
 var CACHE_MS = 5*60*1000;
 var TIME_SLOTS = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'];
+var IDB_QUEUE_KEY = 'at_offline_queue';
 
-// ── TOAST ──
-function toast(msg,type){
+// ════════════════════════════════════════════════
+// OFFLINE / RETRY QUEUE (IndexedDB)
+// ════════════════════════════════════════════════
+var _idb = null;
+
+function openIDB(){
+  return new Promise(function(resolve){
+    if(_idb){resolve(_idb);return;}
+    var req = indexedDB.open('AdmissionTrackerDB',1);
+    req.onupgradeneeded = function(e){
+      e.target.result.createObjectStore('queue',{keyPath:'id'});
+    };
+    req.onsuccess = function(e){_idb=e.target.result;resolve(_idb);};
+    req.onerror = function(){resolve(null);};
+  });
+}
+
+async function idbSaveQueue(queue){
+  var db = await openIDB();
+  if(!db)return;
+  var tx = db.transaction('queue','readwrite');
+  var store = tx.objectStore('queue');
+  store.clear();
+  queue.forEach(function(item){store.put(item);});
+}
+
+async function idbLoadQueue(){
+  var db = await openIDB();
+  if(!db)return[];
+  return new Promise(function(resolve){
+    var tx = db.transaction('queue','readonly');
+    var req = tx.objectStore('queue').getAll();
+    req.onsuccess = function(){resolve(req.result||[]);};
+    req.onerror = function(){resolve([]);};
+  });
+}
+
+async function loadOfflineQueue(){
+  APP.offlineQueue = await idbLoadQueue();
+  updateOfflineBanner();
+}
+
+function updateOfflineBanner(){
+  var banner = document.getElementById('offline-banner');
+  var badge = document.getElementById('queue-badge');
+  if(!APP.isOnline){
+    banner.classList.add('show');
+    if(APP.offlineQueue.length>0){
+      badge.style.display='';
+      badge.textContent=APP.offlineQueue.length+' pending';
+    }else{
+      badge.style.display='none';
+    }
+  }else{
+    if(APP.offlineQueue.length>0){
+      banner.classList.add('show');
+      badge.style.display='';
+      badge.textContent=APP.offlineQueue.length+' pending';
+    }else{
+      banner.classList.remove('show');
+    }
+  }
+}
+
+window.addEventListener('online',function(){
+  APP.isOnline=true;
+  updateOfflineBanner();
+  if(APP.offlineQueue.length>0){
+    toastRich('Back online','Syncing '+APP.offlineQueue.length+' queued lead(s)...','info');
+    setTimeout(retryQueue,1500);
+  }
+});
+window.addEventListener('offline',function(){
+  APP.isOnline=false;
+  updateOfflineBanner();
+});
+
+async function retryQueue(){
+  if(!APP.isOnline){toast('Still offline — try again later','error');return;}
+  var queue = APP.offlineQueue.slice();
+  if(queue.length===0){toast('No pending leads','info');return;}
+  var succeeded=[];
+  var failed=[];
+  for(var i=0;i<queue.length;i++){
+    var item=queue[i];
+    try{
+      var res = await sb.from('leads').insert(item.lead).select().single();
+      if(res.error){failed.push(item);}
+      else{
+        succeeded.push(item);
+        invalidateCache();
+      }
+    }catch(e){failed.push(item);}
+  }
+  APP.offlineQueue=failed;
+  await idbSaveQueue(failed);
+  updateOfflineBanner();
+  if(succeeded.length>0){
+    toastRich('Sync complete',succeeded.length+' lead(s) submitted successfully','success');
+    if(APP.currentPage)await navigate(APP.currentPage);
+  }
+  if(failed.length>0){
+    toastRich('Sync failed',failed.length+' lead(s) could not be submitted. Will retry when online.','error');
+  }
+}
+
+// ════════════════════════════════════════════════
+// RACE-CONDITION-FREE LEAD ID
+// Uses timestamp + random — no DB query needed
+// Format: AT-YYYY-XXXXXXXXX (timestamp millis + 3 random digits)
+// ════════════════════════════════════════════════
+function generateLeadId(){
+  var year = new Date().getFullYear();
+  var ts = Date.now().toString().slice(-6); // last 6 digits of ms timestamp
+  var rand = Math.floor(Math.random()*900)+100; // 3-digit random
+  return 'AT-'+year+'-'+ts+rand;
+}
+
+// ════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════
+function toast(msg,type,opts){
   if(!type)type='success';
   var c=document.getElementById('toast-container');
   var t=document.createElement('div');
-  t.className='toast '+type;t.textContent=msg;c.appendChild(t);
-  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(40px)';t.style.transition='.3s';setTimeout(function(){t.remove();},300);},3000);
+  t.className='toast '+type;
+  t.innerHTML='<div class="toast-content"><div class="toast-msg">'+msg+'</div>'+(opts&&opts.actions?opts.actions:'')+'</div>';
+  c.appendChild(t);
+  var dur=opts&&opts.duration?opts.duration:3500;
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(40px)';t.style.transition='.3s';setTimeout(function(){t.remove();},300);},dur);
+  return t;
 }
 
-// ── HELPERS ──
+function toastRich(title,msg,type,actions){
+  if(!type)type='success';
+  var c=document.getElementById('toast-container');
+  var t=document.createElement('div');
+  t.className='toast '+type;
+  var actHtml=actions?'<div class="toast-actions">'+actions+'</div>':'';
+  t.innerHTML='<div class="toast-content"><div class="toast-title">'+title+'</div><div class="toast-msg">'+msg+'</div>'+actHtml+'</div>';
+  c.appendChild(t);
+  var dur=actions?8000:4000;
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(40px)';t.style.transition='.3s';setTimeout(function(){t.remove();},300);},dur);
+}
+
+// ════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════
 function fmtDate(s){if(!s||s==='')return'—';try{return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return s;}}
 function fmtDT(s){if(!s||s==='')return'—';try{return new Date(s).toLocaleString('en-IN');}catch(e){return s;}}
-function isOverdue(d){if(!d||d==='')return false;return new Date(d)<new Date(new Date().toDateString());}
+function isOverdue(d){if(!d||d==='')return false;var today=new Date();today.setHours(0,0,0,0);return new Date(d)<today;}
+function daysSinceOverdue(d){if(!d||d==='')return 0;var today=new Date();today.setHours(0,0,0,0);var dd=new Date(d);dd.setHours(0,0,0,0);return Math.floor((today-dd)/86400000);}
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function calcRate(total,admitted){if(!total||total===0)return 0;return Math.round((admitted/total)*100);}
 function parseAreas(s){if(!s||s==='All Areas'||s==='')return[];return s.split(',').map(function(a){return a.trim();}).filter(Boolean);}
@@ -587,26 +792,16 @@ function parseSettings(rows){
   return r;
 }
 function groupBy(arr,key){
-  return arr.reduce(function(acc,item){
-    var g=item[key]||'Unknown';
-    if(!acc[g])acc[g]=[];
-    acc[g].push(item);return acc;
-  },{});
+  return arr.reduce(function(acc,item){var g=item[key]||'Unknown';if(!acc[g])acc[g]=[];acc[g].push(item);return acc;},{});
 }
 function rateClass(r){if(r>=30)return'rate-high';if(r>=15)return'rate-mid';return'rate-low';}
 function togglePwd(){var i=document.getElementById('login-password');i.type=i.type==='password'?'text':'password';}
+function toggleAuPass(){var i=document.getElementById('au-pass');i.type=i.type==='password'?'text':'password';}
 function isAdminOrPrincipal(){return APP.profile&&(APP.profile.role==='admin'||APP.profile.role==='principal');}
-
-// ── PHONE NORMALIZE ──
 function normalizePhone(val){return val.replace(/\D/g,'').slice(-10);}
 
-// ── HTML HELPERS ──
 function statusBadge(s){
-  var classes={
-    'Inquiry':'badge-inquiry','Interested':'badge-interested',
-    'Visit Scheduled':'badge-visit','Application':'badge-application',
-    'Fee Paid':'badge-fee','Admitted':'badge-admitted','Dropped':'badge-dropped'
-  };
+  var classes={'Inquiry':'badge-inquiry','Interested':'badge-interested','Visit Scheduled':'badge-visit','Application':'badge-application','Fee Paid':'badge-fee','Admitted':'badge-admitted','Dropped':'badge-dropped'};
   var cls=classes[s]||'badge-inquiry';
   return'<span class="badge '+cls+'">'+(s||'—')+'</span>';
 }
@@ -614,11 +809,20 @@ function statusColor(s){
   var m={'Inquiry':'#94a3b8','Interested':'#fbbf24','Visit Scheduled':'#60a5fa','Application':'#a78bfa','Fee Paid':'#f472b6','Admitted':'#34d399','Dropped':'#f87171'};
   return m[s]||'#94a3b8';
 }
-function fmtFollowUp(date){
+
+function fmtFollowUp(date,status){
   if(!date||date==='')return'<span style="color:var(--gray-300)">—</span>';
+  if(status==='Admitted'||status==='Dropped'){return'<span style="font-size:12px;color:var(--gray-400)">'+fmtDate(date)+'</span>';}
   var od=isOverdue(date);
-  return'<span style="font-size:12px;font-weight:600;color:'+(od?'var(--red)':'var(--gray-500)')+'">'+( od?'⚠ ':'')+fmtDate(date)+'</span>';
+  var days=od?daysSinceOverdue(date):0;
+  if(od){
+    return'<span style="font-size:12px;font-weight:700;color:var(--red);display:flex;align-items:center;gap:4px">'+
+      '<span style="background:var(--red);color:#fff;font-size:10px;padding:1px 5px;border-radius:4px">'+days+'d overdue</span>'+
+      fmtDate(date)+'</span>';
+  }
+  return'<span style="font-size:12px;font-weight:600;color:var(--gray-500)">'+fmtDate(date)+'</span>';
 }
+
 function statCard(title,value,color){
   return'<div class="stat-card"><div><div class="stat-label">'+title+'</div><div class="stat-value">'+value+'</div></div></div>';
 }
@@ -626,13 +830,15 @@ function iconSvg(name){
   var paths={
     alert:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
     clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-    filter:'<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
-    download:'<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>'
+    download:'<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+    trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>',
+    plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+    warning:'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'
   };
   return'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(paths[name]||'')+'</svg>';
 }
 
-// ── STATUS SELECT OPTIONS ──
 function statusOptions(current){
   var statuses=['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
   var html='';
@@ -640,12 +846,346 @@ function statusOptions(current){
   return html;
 }
 
-// ── INLINE STATUS SELECT ──
 function buildInlineStatusSelect(lead,canEdit){
   if(!canEdit){return statusBadge(lead.status);}
   return'<select class="inline-status-select" onchange="inlineStatusChange(this,\''+lead.id+'\')" onclick="event.stopPropagation()" data-current="'+lead.status+'">'+statusOptions(lead.status)+'</select>';
 }
 
+// ════════════════════════════════════════════════
+// DB LAYER
+// ════════════════════════════════════════════════
+async function dbGetLeads(filters){
+  if(!filters)filters={};
+  var q=sb.from('leads').select('*').order('created_at',{ascending:false});
+  if(filters.teacher_id&&filters.teacher_id!=='')q=q.eq('teacher_id',filters.teacher_id);
+  if(filters.area&&filters.area!=='')q=q.eq('area',filters.area);
+  if(filters.status&&filters.status!=='')q=q.eq('status',filters.status);
+  if(filters.source&&filters.source!=='')q=q.eq('source',filters.source);
+  if(filters.grade&&filters.grade!=='')q=q.eq('grade',filters.grade);
+  if(filters.from_date&&filters.from_date!=='')q=q.gte('date',filters.from_date);
+  if(filters.to_date&&filters.to_date!=='')q=q.lte('date',filters.to_date);
+  if(filters.search&&filters.search!==''){
+    q=q.or('student_name.ilike.%'+filters.search+'%,parent_name.ilike.%'+filters.search+'%,parent_phone.ilike.%'+filters.search+'%,lead_id.ilike.%'+filters.search+'%');
+  }
+  var result=await q;
+  if(result.error){console.error('getLeads:',result.error.message);return[];}
+  return result.data||[];
+}
+
+async function dbAddLead(lead){
+  var result=await sb.from('leads').insert(lead).select().single();
+  if(result.error){throw new Error(result.error.message);}
+  return result.data;
+}
+
+async function dbUpdateLead(id,updates){
+  updates.updated_at=new Date().toISOString();
+  var result=await sb.from('leads').update(updates).eq('id',id);
+  if(result.error){console.error('updateLead:',result.error.message);return false;}
+  return true;
+}
+
+async function dbDeleteLead(id){
+  // First delete history
+  await sb.from('lead_history').delete().eq('lead_id',id);
+  var result=await sb.from('leads').delete().eq('id',id);
+  if(result.error){console.error('deleteLead:',result.error.message);return false;}
+  return true;
+}
+
+async function dbCheckDuplicate(phone){
+  var clean=normalizePhone(phone);
+  var result=await sb.from('leads').select('*').eq('parent_phone',clean).limit(1);
+  if(result.data&&result.data.length>0)return{duplicate:true,existing:result.data[0]};
+  return{duplicate:false};
+}
+
+async function dbGetSettings(){
+  var r=await sb.from('settings').select('*');
+  if(r.error)return null;
+  return r.data;
+}
+
+async function dbUpdateSetting(key,value){
+  var r=await sb.from('settings').update({setting_value:value}).eq('setting_key',key);
+  if(r.error)console.error('updateSetting:',r.error.message);
+}
+
+async function dbAddHistory(h){
+  var r=await sb.from('lead_history').insert(h);
+  if(r.error)console.error('addHistory:',r.error.message);
+}
+
+// ════════════════════════════════════════════════
+// ADD USER (Admin function using Supabase Admin API via Edge Function or direct)
+// We use the standard auth.signUp + users table insert pattern
+// ════════════════════════════════════════════════
+async function dbCreateUser(userData){
+  // Create auth user
+  var r = await sb.auth.signUp({
+    email: userData.email,
+    password: userData.password,
+    options:{data:{full_name:userData.full_name}}
+  });
+  if(r.error){throw new Error(r.error.message);}
+  var authId = r.data.user?r.data.user.id:null;
+  if(!authId){throw new Error('Could not get user ID from auth response');}
+
+  // Insert into users table
+  var profile = {
+    auth_id: authId,
+    full_name: userData.full_name,
+    email: userData.email,
+    phone: userData.phone||'',
+    role: userData.role,
+    areas: userData.areas||'',
+    status: 'active',
+    login_count: 0
+  };
+  var pr = await sb.from('users').insert(profile).select().single();
+  if(pr.error){throw new Error('User created in auth but profile failed: '+pr.error.message);}
+  return pr.data;
+}
+
+// ════════════════════════════════════════════════
+// CACHE
+// ════════════════════════════════════════════════
+async function getLeads(forceRefresh){
+  var age=Date.now()-(APP.leadsCacheTime||0);
+  if(!forceRefresh&&APP.leadsCache.length>0&&age<CACHE_MS)return APP.leadsCache;
+  var data=await dbGetLeads();
+  APP.leadsCache=data;APP.leadsCacheTime=Date.now();
+  return data;
+}
+function filterLeads(leads,filters){
+  if(!filters)return leads;
+  var r=leads.slice();
+  if(filters.teacher_id&&filters.teacher_id!=='')r=r.filter(function(l){return l.teacher_id===filters.teacher_id;});
+  if(filters.area&&filters.area!=='')r=r.filter(function(l){return l.area===filters.area;});
+  if(filters.status&&filters.status!=='')r=r.filter(function(l){return l.status===filters.status;});
+  if(filters.source&&filters.source!=='')r=r.filter(function(l){return l.source===filters.source;});
+  if(filters.grade&&filters.grade!=='')r=r.filter(function(l){return l.grade===filters.grade;});
+  if(filters.from_date&&filters.from_date!=='')r=r.filter(function(l){return l.date&&l.date>=filters.from_date;});
+  if(filters.to_date&&filters.to_date!=='')r=r.filter(function(l){return l.date&&l.date<=filters.to_date;});
+  if(filters.search&&filters.search!==''){
+    var s=filters.search.toLowerCase();
+    r=r.filter(function(l){
+      return(l.student_name&&l.student_name.toLowerCase().includes(s))||
+             (l.parent_name&&l.parent_name.toLowerCase().includes(s))||
+             (l.parent_phone&&l.parent_phone.includes(s))||
+             (l.lead_id&&l.lead_id.toLowerCase().includes(s));
+    });
+  }
+  return r;
+}
+function invalidateCache(){APP.leadsCacheTime=0;}
+
+// ════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════
+async function initApp(){
+  try{
+    await loadOfflineQueue();
+    var s=await sb.auth.getSession();
+    if(s.data&&s.data.session&&s.data.session.user){
+      APP.user=s.data.session.user;
+      await loadProfile(s.data.session.user.id);
+    }else{showLogin();}
+  }catch(e){console.error('initApp:',e.message);showLogin();}
+  finally{document.getElementById('global-loading').style.display='none';}
+}
+
+async function loadProfile(authId){
+  try{
+    var r=await sb.from('users').select('*').eq('auth_id',authId).single();
+    if(r.error||!r.data){showLogin();return;}
+    APP.profile=r.data;
+    sb.from('users').update({last_login:new Date().toISOString(),login_count:(r.data.login_count||0)+1}).eq('auth_id',authId).then(function(){}).catch(function(){});
+    sb.from('audit_logs').insert({user_id:r.data.id,user_name:r.data.full_name,user_role:r.data.role,action:'LOGIN',details:'Logged in'}).then(function(){}).catch(function(){});
+    await loadSharedData();
+    showAppShell();
+  }catch(e){console.error('loadProfile:',e.message);showLogin();}
+}
+
+async function loadSharedData(){
+  try{
+    var settingsRows=await dbGetSettings();
+    if(settingsRows){APP.settings=parseSettings(settingsRows);}
+    else{APP.settings={areas:['Patamata','Benz Circle','Governorpet','Labbipet','MG Road'],sources:['Walk-in','Referral','Coaching Center','School Event','Other'],grades:['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],statuses:['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped']};}
+    var uRes=await sb.from('users').select('*').order('full_name');
+    if(!uRes.error&&uRes.data){APP.allUsers=uRes.data;APP.teachers=uRes.data.filter(function(u){return u.role==='teacher'&&u.status==='active';});}
+    var leads=await dbGetLeads();
+    APP.leadsCache=leads;APP.leadsCacheTime=Date.now();
+  }catch(e){
+    console.error('loadSharedData:',e.message);
+    APP.settings={areas:[],sources:[],grades:[],statuses:[]};
+    APP.allUsers=[];APP.teachers=[];APP.leadsCache=[];APP.leadsCacheTime=0;
+  }
+}
+
+async function doLogin(){
+  var email=document.getElementById('login-email').value.trim().toLowerCase();
+  var password=document.getElementById('login-password').value;
+  var errEl=document.getElementById('login-error');
+  var btn=document.getElementById('login-btn');
+  errEl.classList.add('hidden');
+  if(!email||!password){errEl.textContent='Please enter email and password.';errEl.classList.remove('hidden');return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  try{
+    var r=await sb.auth.signInWithPassword({email:email,password:password});
+    if(r.error){errEl.textContent='Invalid email or password.';errEl.classList.remove('hidden');btn.textContent='Sign In';btn.disabled=false;return;}
+    document.getElementById('global-loading').style.display='flex';
+    document.getElementById('page-login').classList.add('hidden');
+    APP.user=r.data.user;
+    await loadProfile(r.data.user.id);
+    document.getElementById('global-loading').style.display='none';
+  }catch(e){
+    errEl.textContent='Something went wrong. Please try again.';errEl.classList.remove('hidden');
+    btn.textContent='Sign In';btn.disabled=false;
+    document.getElementById('global-loading').style.display='none';
+    document.getElementById('page-login').classList.remove('hidden');
+  }
+}
+
+async function doForgot(){
+  var email=document.getElementById('forgot-email').value.trim().toLowerCase();
+  var errEl=document.getElementById('forgot-error');
+  var btn=document.getElementById('forgot-btn');
+  errEl.classList.add('hidden');
+  if(!email){errEl.textContent='Please enter your email.';errEl.classList.remove('hidden');return;}
+  btn.textContent='Sending...';btn.disabled=true;
+  var r=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
+  btn.textContent='Send Reset Link';btn.disabled=false;
+  if(r.error){errEl.textContent=r.error.message;errEl.classList.remove('hidden');return;}
+  document.getElementById('forgot-email-show').textContent=email;
+  document.getElementById('forgot-form-wrap').classList.add('hidden');
+  document.getElementById('forgot-sent').classList.remove('hidden');
+}
+
+async function doLogout(){
+  if(APP.profile){sb.from('audit_logs').insert({user_id:APP.profile.id,user_name:APP.profile.full_name,user_role:APP.profile.role,action:'LOGOUT',details:'Logged out'}).then(function(){}).catch(function(){});}
+  await sb.auth.signOut();
+  APP.user=null;APP.profile=null;APP.leadsCache=[];APP.charts={};
+  showLogin();
+}
+function showLogin(){
+  document.getElementById('page-login').classList.remove('hidden');
+  document.getElementById('page-forgot').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('hidden');
+  var btn=document.getElementById('login-btn');
+  if(btn){btn.textContent='Sign In';btn.disabled=false;}
+}
+function showForgot(){
+  document.getElementById('page-forgot').classList.remove('hidden');
+  document.getElementById('page-login').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('hidden');
+}
+function showAppShell(){
+  document.getElementById('page-login').classList.add('hidden');
+  document.getElementById('page-forgot').classList.add('hidden');
+  document.getElementById('app-shell').classList.remove('hidden');
+  buildSidebar();
+  var def=APP.profile.role==='teacher'?'teacher-home':APP.profile.role==='principal'?'principal-home':'admin-home';
+  navigate(def);
+}
+
+// ════════════════════════════════════════════════
+// SIDEBAR
+// ════════════════════════════════════════════════
+function buildSidebar(){
+  var p=APP.profile;
+  document.getElementById('sb-avatar').textContent=(p.full_name&&p.full_name.charAt(0).toUpperCase())||'U';
+  document.getElementById('sb-name').textContent=p.full_name;
+  var rb=document.getElementById('sb-role');rb.textContent=p.role;rb.className='sidebar-role role-'+p.role;
+  var ae=document.getElementById('sb-areas');
+  if(p.role==='teacher'&&p.areas&&p.areas!=='All Areas'){ae.textContent='📍 '+p.areas;ae.style.display='block';}
+  else{ae.style.display='none';}
+
+  var overdueCnt=APP.leadsCache.filter(function(l){
+    if(p.role==='teacher')return l.teacher_id===p.id&&isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';
+    return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';
+  }).length;
+
+  var teacherLinks=[
+    {id:'teacher-home',label:'Home'},
+    {id:'submit-lead',label:'Submit Lead'},
+    {id:'my-leads',label:'My Leads'},
+    {id:'overdue-leads',label:'Overdue',badge:overdueCnt},
+    {id:'my-performance',label:'My Performance'}
+  ];
+  var principalLinks=[
+    {id:'principal-home',label:'Home'},
+    {id:'overview',label:'Overview'},
+    {id:'teacher-perf',label:'Teacher Performance'},
+    {id:'area-analysis',label:'Area Analysis'},
+    {id:'funnel',label:'Funnel View'},
+    {id:'all-leads',label:'All Leads'},
+    {id:'overdue-leads',label:'Overdue',badge:overdueCnt},
+    {id:'visit-calendar',label:'Visit Calendar'},
+    {id:'reports',label:'Reports'},
+    {id:'user-mgmt',label:'Manage Users'}
+  ];
+  var adminLinks=[
+    {id:'admin-home',label:'Home'},
+    {id:'overview',label:'Overview'},
+    {id:'teacher-perf',label:'Teacher Performance'},
+    {id:'area-analysis',label:'Area Analysis'},
+    {id:'funnel',label:'Funnel View'},
+    {id:'all-leads',label:'All Leads'},
+    {id:'overdue-leads',label:'Overdue',badge:overdueCnt},
+    {id:'visit-calendar',label:'Visit Calendar'},
+    {id:'reports',label:'Reports'},
+    {id:'user-mgmt',label:'User Management'},
+    {id:'audit-logs',label:'Audit Logs'},
+    {id:'sys-settings',label:'System Settings'}
+  ];
+
+  var links=p.role==='teacher'?teacherLinks:p.role==='principal'?principalLinks:adminLinks;
+  var html='';
+  links.forEach(function(l){
+    html+='<button class="nav-item" id="nav-'+l.id+'" onclick="navigate(\''+l.id+'\')">'+ l.label;
+    if(l.badge&&l.badge>0)html+='<span class="nav-badge">'+l.badge+'</span>';
+    html+='</button>';
+  });
+  document.getElementById('sidebar-nav').innerHTML=html;
+}
+
+async function navigate(page){
+  Object.keys(APP.charts).forEach(function(k){try{APP.charts[k].destroy();}catch(e){}});
+  APP.charts={};APP.currentPage=page;APP.selectedLeadIds=[];
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var activeEl=document.getElementById('nav-'+page);if(activeEl)activeEl.classList.add('active');
+  closeSidebar();
+  var c=document.getElementById('pages-container');
+  c.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px"><div class="spinner"></div></div>';
+  await renderPage(page,c);
+}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebar-overlay').classList.add('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open');}
+
+async function renderPage(page,c){
+  if(page==='teacher-home')await pgTeacherHome(c);
+  else if(page==='submit-lead')await pgSubmitLead(c);
+  else if(page==='my-leads')await pgMyLeads(c);
+  else if(page==='my-performance')await pgMyPerformance(c);
+  else if(page==='overdue-leads')await pgOverdueLeads(c);
+  else if(page==='principal-home'||page==='admin-home')await pgPrincipalHome(c);
+  else if(page==='overview')await pgOverview(c);
+  else if(page==='teacher-perf')await pgTeacherPerf(c);
+  else if(page==='area-analysis')await pgAreaAnalysis(c);
+  else if(page==='funnel')await pgFunnel(c);
+  else if(page==='all-leads')await pgAllLeads(c);
+  else if(page==='visit-calendar')await pgVisitCalendar(c);
+  else if(page==='reports')await pgReports(c);
+  else if(page==='user-mgmt')await pgUserMgmt(c);
+  else if(page==='audit-logs')await pgAuditLogs(c);
+  else if(page==='sys-settings')await pgSysSettings(c);
+  else c.innerHTML='<p style="padding:40px;color:var(--gray-400)">Page not found</p>';
+}
+
+// ════════════════════════════════════════════════
+// INLINE STATUS
+// ════════════════════════════════════════════════
 async function inlineStatusChange(sel,leadId){
   var newStatus=sel.value;
   var oldStatus=sel.dataset.current;
@@ -679,37 +1219,33 @@ async function doInlineUpdate(leadId,newStatus,oldStatus,vDate,vTime,sel){
   }
 }
 
-// ── VISIT MODAL ──
+// ════════════════════════════════════════════════
+// VISIT MODAL
+// ════════════════════════════════════════════════
 function openVisitModal(callback){
-  APP.visitCallback=callback;
-  APP.visitSelectedSlot=null;
+  APP.visitCallback=callback;APP.visitSelectedSlot=null;
   var dateInput=document.getElementById('visit-date-input');
-  dateInput.value='';
-  dateInput.min=todayStr();
+  dateInput.value='';dateInput.min=todayStr();
   renderSlotGrid('slot-grid',function(slot){APP.visitSelectedSlot=slot;});
   document.getElementById('visit-modal').classList.add('open');
 }
-
 function closeVisitModal(revert){
   document.getElementById('visit-modal').classList.remove('open');
   if(revert&&APP.visitCallback){APP.visitCallback=null;}
 }
-
 function renderSlotGrid(gridId,onSelect){
   var html='';
   TIME_SLOTS.forEach(function(slot){
-    html+='<button class="slot-btn" onclick="selectSlot(this,\''+slot+'\',\''+gridId+'\')"">'+slot+'</button>';
+    html+='<button class="slot-btn" onclick="selectSlot(this,\''+slot+'\',\''+gridId+'\')">'+slot+'</button>';
   });
   document.getElementById(gridId).innerHTML=html;
 }
-
 function selectSlot(btn,slot,gridId){
   document.querySelectorAll('#'+gridId+' .slot-btn').forEach(function(b){b.classList.remove('selected');});
   btn.classList.add('selected');
   if(gridId==='slot-grid')APP.visitSelectedSlot=slot;
   if(gridId==='bulk-slot-grid')APP.bulkSelectedSlot=slot;
 }
-
 function confirmVisitSlot(){
   var date=document.getElementById('visit-date-input').value;
   if(!date){toast('Please select a visit date','error');return;}
@@ -719,34 +1255,150 @@ function confirmVisitSlot(){
   if(cb)cb(date,APP.visitSelectedSlot);
 }
 
-// ── TOOLBAR & SELECTION ──
+// ════════════════════════════════════════════════
+// ADD USER MODAL
+// ════════════════════════════════════════════════
+function openAddUserModal(){
+  APP.addUserSelectedAreas=[];
+  document.getElementById('au-name').value='';
+  document.getElementById('au-role').value='';
+  document.getElementById('au-email').value='';
+  document.getElementById('au-phone').value='';
+  document.getElementById('au-pass').value='';
+  document.getElementById('au-areas-section').classList.add('hidden');
+  document.getElementById('au-area-selected').textContent='';
+  document.getElementById('add-user-error').classList.add('hidden');
+  document.getElementById('add-user-btn').textContent='Create User';
+  document.getElementById('add-user-btn').disabled=false;
+  document.getElementById('add-user-modal').classList.add('open');
+}
+function closeAddUserModal(){document.getElementById('add-user-modal').classList.remove('open');}
+
+function onAddUserRoleChange(){
+  var role=document.getElementById('au-role').value;
+  var sec=document.getElementById('au-areas-section');
+  var grid=document.getElementById('au-area-grid');
+  if(role==='teacher'){
+    sec.classList.remove('hidden');
+    var areas=(APP.settings&&APP.settings.areas)||[];
+    var html='';
+    areas.forEach(function(area){
+      html+='<div class="area-checkbox" onclick="toggleAddUserArea(this,\''+area+'\')">';
+      html+='<div class="area-check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>';
+      html+='<span>'+area+'</span></div>';
+    });
+    grid.innerHTML=html;
+    APP.addUserSelectedAreas=[];
+    document.getElementById('au-area-selected').textContent='';
+  }else{
+    sec.classList.add('hidden');
+  }
+}
+
+function toggleAddUserArea(el,area){
+  var idx=APP.addUserSelectedAreas.indexOf(area);
+  if(idx>-1){APP.addUserSelectedAreas.splice(idx,1);el.classList.remove('checked');}
+  else{APP.addUserSelectedAreas.push(area);el.classList.add('checked');}
+  document.getElementById('au-area-selected').textContent=APP.addUserSelectedAreas.length>0?'Selected: '+APP.addUserSelectedAreas.join(', '):'';
+}
+
+async function submitAddUser(){
+  var errEl=document.getElementById('add-user-error');
+  errEl.classList.add('hidden');
+  var name=document.getElementById('au-name').value.trim();
+  var role=document.getElementById('au-role').value;
+  var email=document.getElementById('au-email').value.trim().toLowerCase();
+  var phone=normalizePhone(document.getElementById('au-phone').value||'');
+  var pass=document.getElementById('au-pass').value;
+
+  if(!name||name.length<2){errEl.textContent='Please enter a valid full name.';errEl.classList.remove('hidden');return;}
+  if(!role){errEl.textContent='Please select a role.';errEl.classList.remove('hidden');return;}
+  if(!email||!email.includes('@')){errEl.textContent='Please enter a valid email address.';errEl.classList.remove('hidden');return;}
+  if(!pass||pass.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.classList.remove('hidden');return;}
+  if(!/\d/.test(pass)){errEl.textContent='Password must contain at least one number.';errEl.classList.remove('hidden');return;}
+
+  var btn=document.getElementById('add-user-btn');
+  btn.textContent='Creating...';btn.disabled=true;
+
+  try{
+    var userData={
+      full_name:name,role:role,email:email,phone:phone,password:pass,
+      areas:role==='teacher'?APP.addUserSelectedAreas.join(','):''
+    };
+    var newUser=await dbCreateUser(userData);
+    sb.from('audit_logs').insert({user_id:APP.profile.id,user_name:APP.profile.full_name,user_role:APP.profile.role,action:'ADD_USER',details:'Added user: '+name+' ('+role+')'}).then(function(){}).catch(function(){});
+    toast(name+' added successfully!');
+    closeAddUserModal();
+    await loadSharedData();
+    await pgUserMgmt(document.getElementById('pages-container'));
+  }catch(e){
+    var msg=e.message||'Failed to create user';
+    if(msg.includes('already registered')){msg='This email is already registered. Use a different email.';}
+    else if(msg.includes('password')){msg='Password is too weak. Use at least 8 chars with a number.';}
+    errEl.textContent=msg;
+    errEl.classList.remove('hidden');
+    btn.textContent='Create User';
+    btn.disabled=false;
+  }
+}
+
+// ════════════════════════════════════════════════
+// DELETE LEAD
+// ════════════════════════════════════════════════
+function openDeleteModal(leadId){
+  APP.pendingDeleteLeadId=leadId;
+  var lead=APP.leadsCache.find(function(l){return l.id===leadId;});
+  var desc=lead?'Deleting lead for '+lead.student_name+' ('+lead.lead_id+'). This cannot be undone.':'This cannot be undone.';
+  document.getElementById('delete-lead-desc').textContent=desc;
+  document.getElementById('delete-confirm-input').value='';
+  document.getElementById('confirm-delete-btn').textContent='Delete Permanently';
+  document.getElementById('confirm-delete-btn').disabled=false;
+  document.getElementById('delete-lead-modal').classList.add('open');
+}
+function closeDeleteModal(){document.getElementById('delete-lead-modal').classList.remove('open');APP.pendingDeleteLeadId=null;}
+
+async function confirmDeleteLead(){
+  var val=document.getElementById('delete-confirm-input').value.trim();
+  if(val!=='DELETE'){toast('Type DELETE exactly to confirm','error');return;}
+  var lid=APP.pendingDeleteLeadId;
+  if(!lid)return;
+  var btn=document.getElementById('confirm-delete-btn');
+  btn.textContent='Deleting...';btn.disabled=true;
+  var ok=await dbDeleteLead(lid);
+  if(ok){
+    var lead=APP.leadsCache.find(function(l){return l.id===lid;});
+    sb.from('audit_logs').insert({user_id:APP.profile.id,user_name:APP.profile.full_name,user_role:APP.profile.role,action:'DELETE_LEAD',details:'Deleted: '+(lead?lead.lead_id+' '+lead.student_name:'id='+lid)}).then(function(){}).catch(function(){});
+    APP.leadsCache=APP.leadsCache.filter(function(l){return l.id!==lid;});
+    closeDeleteModal();
+    closePanel();
+    toast('Lead deleted permanently');
+    await navigate(APP.currentPage);
+  }else{
+    btn.textContent='Delete Permanently';btn.disabled=false;
+    toast('Failed to delete lead','error');
+  }
+}
+
+// ════════════════════════════════════════════════
+// TOOLBAR & SELECTION
+// ════════════════════════════════════════════════
 function updateSelectionInfo(tableId){
   var ids=APP.selectedLeadIds||[];
   var infoEl=document.getElementById('sel-info-'+tableId);
   if(infoEl){
-    if(ids.length>0){
-      infoEl.innerHTML='<span>'+ids.length+'</span> lead'+(ids.length>1?'s':'')+' selected';
-      infoEl.style.display='';
-    }else{
-      infoEl.style.display='none';
-    }
+    if(ids.length>0){infoEl.innerHTML='<span>'+ids.length+'</span> selected';infoEl.style.display='';}
+    else{infoEl.style.display='none';}
   }
-  // Enable/disable action buttons based on selection
   var clearBtn=document.getElementById('btn-clear-'+tableId);
   if(clearBtn)clearBtn.style.display=ids.length>0?'':'none';
 }
-
 function toggleSelectAll(cb,tableId){
   var allBoxes=document.querySelectorAll('#'+tableId+' .row-cb');
   var ids=[];
-  allBoxes.forEach(function(box){
-    box.checked=cb.checked;
-    if(cb.checked&&box.dataset.lid)ids.push(box.dataset.lid);
-  });
+  allBoxes.forEach(function(box){box.checked=cb.checked;if(cb.checked&&box.dataset.lid)ids.push(box.dataset.lid);});
   APP.selectedLeadIds=ids;
   updateSelectionInfo(tableId);
 }
-
 function toggleRowSelect(cb,leadId,tableId){
   var ids=APP.selectedLeadIds||[];
   if(cb.checked){if(ids.indexOf(leadId)===-1)ids.push(leadId);}
@@ -754,7 +1406,6 @@ function toggleRowSelect(cb,leadId,tableId){
   APP.selectedLeadIds=ids;
   updateSelectionInfo(tableId);
 }
-
 function clearSelection(tableId){
   APP.selectedLeadIds=[];
   document.querySelectorAll('#'+tableId+' .row-cb').forEach(function(b){b.checked=false;});
@@ -763,13 +1414,35 @@ function clearSelection(tableId){
   updateSelectionInfo(tableId);
 }
 
+function buildLeadsToolbar(tableId,showExport,countId,extraBtns){
+  var canReassign=isAdminOrPrincipal();
+  var html='<div class="leads-toolbar">';
+  html+='<div class="leads-toolbar-left">';
+  html+='<span class="selection-info" id="sel-info-'+tableId+'" style="display:none">0 selected</span>';
+  html+='<button class="btn btn-orange btn-sm" onclick="openBulkStatusModalFromToolbar(\''+tableId+'\')">';
+  html+='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+  html+=' Update Status</button>';
+  if(canReassign){
+    html+='<button class="btn btn-blue btn-sm" onclick="openReassignFromToolbar(\''+tableId+'\')">';
+    html+='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
+    html+=' Reassign</button>';
+  }
+  html+='<button class="btn btn-outline btn-sm" id="btn-clear-'+tableId+'" onclick="clearSelection(\''+tableId+'\')" style="display:none">Clear</button>';
+  html+='</div>';
+  html+='<div class="leads-toolbar-right">';
+  if(countId)html+='<span style="font-size:13px;color:var(--gray-500);font-weight:500" id="'+countId+'"></span>';
+  if(extraBtns)html+=extraBtns;
+  if(showExport)html+='<button class="btn btn-green btn-sm" onclick="exportLeads()">'+iconSvg('download')+' Export</button>';
+  html+='</div></div>';
+  return html;
+}
+
 function openBulkStatusModalFromToolbar(tableId){
   var ids=APP.selectedLeadIds||[];
   if(ids.length===0){toast('Select at least one lead first','error');return;}
   openBulkStatusModal(tableId);
 }
-
-function openBulkStatusModal(tableId){
+function openBulkStatusModal(){
   var ids=APP.selectedLeadIds||[];
   if(ids.length===0){toast('Select at least one lead','error');return;}
   document.getElementById('bulk-status-count').textContent='Updating '+ids.length+' selected lead'+(ids.length>1?'s':'')+'.';
@@ -777,18 +1450,14 @@ function openBulkStatusModal(tableId){
   document.getElementById('bulk-followup-input').value='';
   document.getElementById('bulk-visit-section').classList.add('hidden');
   APP.bulkSelectedSlot=null;
-  renderSlotGrid('bulk-slot-grid',function(slot){APP.bulkSelectedSlot=slot;});
+  renderSlotGrid('bulk-slot-grid',function(){});
   document.getElementById('bulk-status-modal').classList.add('open');
 }
-
 function closeBulkStatusModal(){document.getElementById('bulk-status-modal').classList.remove('open');}
-
 function onBulkStatusChange(val){
   var sec=document.getElementById('bulk-visit-section');
-  if(val==='Visit Scheduled'){sec.classList.remove('hidden');}
-  else{sec.classList.add('hidden');}
+  if(val==='Visit Scheduled'){sec.classList.remove('hidden');}else{sec.classList.add('hidden');}
 }
-
 async function applyBulkStatus(){
   var newStatus=document.getElementById('bulk-status-select').value;
   var fu=document.getElementById('bulk-followup-input').value;
@@ -818,9 +1487,7 @@ async function applyBulkStatus(){
       var oldStatus=lead.status;
       var idx=APP.leadsCache.findIndex(function(l){return l.id===lid;});
       if(idx>-1)APP.leadsCache[idx]=Object.assign({},APP.leadsCache[idx],updates);
-      if(oldStatus!==newStatus){
-        dbAddHistory({lead_id:lid,old_status:oldStatus,new_status:newStatus,changed_by_id:APP.profile.id,changed_by_name:APP.profile.full_name,changed_by_role:APP.profile.role,notes:'Bulk update'}).catch(function(){});
-      }
+      if(oldStatus!==newStatus)dbAddHistory({lead_id:lid,old_status:oldStatus,new_status:newStatus,changed_by_id:APP.profile.id,changed_by_name:APP.profile.full_name,changed_by_role:APP.profile.role,notes:'Bulk update'}).catch(function(){});
     }
   }
   toast(successCount+' lead'+(successCount>1?'s':'')+' updated');
@@ -828,47 +1495,47 @@ async function applyBulkStatus(){
   await navigate(APP.currentPage);
 }
 
-// ── REASSIGN MODAL ──
-function openReassignModal(leadIds){
+function openReassignFromToolbar(tableId){
   if(!isAdminOrPrincipal()){toast('Only admin or principal can reassign leads','error');return;}
+  var ids=APP.selectedLeadIds||[];
+  if(ids.length===0){toast('Select at least one lead first','error');return;}
+  openReassignModal(ids);
+}
+
+// ════════════════════════════════════════════════
+// REASSIGN MODAL
+// ════════════════════════════════════════════════
+function openReassignModal(leadIds){
+  if(!isAdminOrPrincipal()){toast('Only admin or principal can reassign','error');return;}
   if(!leadIds||leadIds.length===0){toast('Select at least one lead','error');return;}
-  APP.reassignLeadIds=leadIds;
-  APP.reassignSelectedTeacherId=null;
+  APP.reassignLeadIds=leadIds;APP.reassignSelectedTeacherId=null;
   document.getElementById('reassign-count-label').textContent=leadIds.length+' lead'+(leadIds.length>1?'s':'')+' selected';
   document.getElementById('teacher-search-input').value='';
   document.getElementById('reassign-selected-label').textContent='';
   renderTeacherList('');
   document.getElementById('reassign-modal').classList.add('open');
 }
-
 function closeReassignModal(){document.getElementById('reassign-modal').classList.remove('open');}
-
 function renderTeacherList(search){
-  var teachers=APP.teachers.filter(function(t){
-    if(!search)return true;
-    return t.full_name.toLowerCase().includes(search.toLowerCase());
-  });
+  var teachers=APP.teachers.filter(function(t){if(!search)return true;return t.full_name.toLowerCase().includes(search.toLowerCase());});
   var html='';
   teachers.forEach(function(t){
     var tLeads=APP.leadsCache.filter(function(l){return l.teacher_id===t.id;}).length;
     var isSel=APP.reassignSelectedTeacherId===t.id;
     html+='<div class="teacher-option'+(isSel?' selected':'')+'" onclick="selectReassignTeacher(\''+t.id+'\',\''+t.full_name+'\')">';
     html+='<div><div class="teacher-option-name">'+t.full_name+'</div>';
-    html+='<div class="teacher-option-meta">'+(t.areas||'No areas assigned')+'</div></div>';
+    html+='<div class="teacher-option-meta">'+(t.areas||'No areas')+'</div></div>';
     html+='<div class="teacher-option-count">'+tLeads+' leads</div></div>';
   });
   if(!html)html='<p style="color:var(--gray-400);font-size:13px;padding:10px">No teachers found</p>';
   document.getElementById('teacher-list').innerHTML=html;
 }
-
 function filterTeacherList(q){renderTeacherList(q);}
-
 function selectReassignTeacher(tid,tname){
   APP.reassignSelectedTeacherId=tid;
   document.getElementById('reassign-selected-label').textContent='Selected: '+tname;
   renderTeacherList(document.getElementById('teacher-search-input').value);
 }
-
 async function confirmReassign(){
   if(!APP.reassignSelectedTeacherId){toast('Please select a teacher','error');return;}
   var teacher=APP.teachers.find(function(t){return t.id===APP.reassignSelectedTeacherId;});
@@ -885,301 +1552,24 @@ async function confirmReassign(){
       successCount++;
       var idx=APP.leadsCache.findIndex(function(l){return l.id===lid;});
       if(idx>-1)APP.leadsCache[idx]=Object.assign({},APP.leadsCache[idx],{teacher_id:teacher.id,teacher_name:teacher.full_name});
-      dbAddHistory({lead_id:lid,old_status:lead.status,new_status:lead.status,changed_by_id:APP.profile.id,changed_by_name:APP.profile.full_name,changed_by_role:APP.profile.role,notes:'Reassigned to '+teacher.full_name}).catch(function(){});
     }
   }
   toast(successCount+' lead'+(successCount>1?'s':'')+' reassigned to '+teacher.full_name);
-  APP.selectedLeadIds=[];
-  APP.reassignLeadIds=[];
-  // Refresh panel if open
+  APP.selectedLeadIds=[];APP.reassignLeadIds=[];
   if(APP.panelLead){
     var updatedLead=APP.leadsCache.find(function(l){return l.id===APP.panelLead.id;});
-    if(updatedLead){openPanel(updatedLead);}
+    if(updatedLead)openPanel(updatedLead);
   }
   await navigate(APP.currentPage);
 }
 
-// ── DB LAYER ──
-async function dbGetLeads(filters){
-  if(!filters)filters={};
-  var q=sb.from('leads').select('*').order('created_at',{ascending:false});
-  if(filters.teacher_id&&filters.teacher_id!=='')q=q.eq('teacher_id',filters.teacher_id);
-  if(filters.area&&filters.area!=='')q=q.eq('area',filters.area);
-  if(filters.status&&filters.status!=='')q=q.eq('status',filters.status);
-  if(filters.source&&filters.source!=='')q=q.eq('source',filters.source);
-  if(filters.grade&&filters.grade!=='')q=q.eq('grade',filters.grade);
-  if(filters.from_date&&filters.from_date!=='')q=q.gte('date',filters.from_date);
-  if(filters.to_date&&filters.to_date!=='')q=q.lte('date',filters.to_date);
-  if(filters.search&&filters.search!==''){
-    q=q.or('student_name.ilike.%'+filters.search+'%,parent_name.ilike.%'+filters.search+'%,parent_phone.ilike.%'+filters.search+'%,lead_id.ilike.%'+filters.search+'%');
-  }
-  var result=await q;
-  if(result.error){console.error('getLeads:',result.error.message);return[];}
-  return result.data||[];
-}
-async function dbAddLead(lead){
-  var result=await sb.from('leads').insert(lead).select().single();
-  if(result.error){console.error('addLead:',result.error.message);return null;}
-  return result.data;
-}
-async function dbUpdateLead(id,updates){
-  updates.updated_at=new Date().toISOString();
-  var result=await sb.from('leads').update(updates).eq('id',id);
-  if(result.error){console.error('updateLead:',result.error.message);return false;}
-  return true;
-}
-async function dbCheckDuplicate(phone){
-  var clean=normalizePhone(phone);
-  var result=await sb.from('leads').select('*').eq('parent_phone',clean).limit(1);
-  if(result.data&&result.data.length>0)return{duplicate:true,existing:result.data[0]};
-  return{duplicate:false};
-}
-async function dbGetNextLeadId(){
-  var year=new Date().getFullYear();
-  var result=await sb.from('leads').select('lead_id').like('lead_id','AT-'+year+'-%').order('lead_id',{ascending:false}).limit(1);
-  if(result.data&&result.data.length>0){
-    var parts=result.data[0].lead_id.split('-');
-    var num=parseInt(parts[parts.length-1])+1;
-    return'AT-'+year+'-'+String(num).padStart(3,'0');
-  }
-  return'AT-'+year+'-001';
-}
-async function dbAddHistory(h){
-  var r=await sb.from('lead_history').insert(h);
-  if(r.error)console.error('addHistory:',r.error.message);
-}
-async function dbGetSettings(){
-  var r=await sb.from('settings').select('*');
-  if(r.error)return null;
-  return r.data;
-}
-async function dbUpdateSetting(key,value){
-  var r=await sb.from('settings').update({setting_value:value}).eq('setting_key',key);
-  if(r.error)console.error('updateSetting:',r.error.message);
-}
-
-// ── CACHE ──
-async function getLeads(forceRefresh){
-  var age=Date.now()-(APP.leadsCacheTime||0);
-  if(!forceRefresh&&APP.leadsCache.length>0&&age<CACHE_MS)return APP.leadsCache;
-  var data=await dbGetLeads();
-  APP.leadsCache=data;APP.leadsCacheTime=Date.now();
-  return data;
-}
-function filterLeads(leads,filters){
-  if(!filters)return leads;
-  var r=leads.slice();
-  if(filters.teacher_id&&filters.teacher_id!=='')r=r.filter(function(l){return l.teacher_id===filters.teacher_id;});
-  if(filters.area&&filters.area!=='')r=r.filter(function(l){return l.area===filters.area;});
-  if(filters.status&&filters.status!=='')r=r.filter(function(l){return l.status===filters.status;});
-  if(filters.source&&filters.source!=='')r=r.filter(function(l){return l.source===filters.source;});
-  if(filters.grade&&filters.grade!=='')r=r.filter(function(l){return l.grade===filters.grade;});
-  if(filters.from_date&&filters.from_date!=='')r=r.filter(function(l){return l.date&&l.date>=filters.from_date;});
-  if(filters.to_date&&filters.to_date!=='')r=r.filter(function(l){return l.date&&l.date<=filters.to_date;});
-  if(filters.search&&filters.search!==''){
-    var s=filters.search.toLowerCase();
-    r=r.filter(function(l){
-      return(l.student_name&&l.student_name.toLowerCase().includes(s))||
-             (l.parent_name&&l.parent_name.toLowerCase().includes(s))||
-             (l.parent_phone&&l.parent_phone.includes(s))||
-             (l.lead_id&&l.lead_id.toLowerCase().includes(s));
-    });
-  }
-  return r;
-}
-function invalidateCache(){APP.leadsCacheTime=0;}
-
-// ── AUTH ──
-async function initApp(){
-  try{
-    var s=await sb.auth.getSession();
-    if(s.data&&s.data.session&&s.data.session.user){
-      APP.user=s.data.session.user;
-      await loadProfile(s.data.session.user.id);
-    }else{showLogin();}
-  }catch(e){console.error('initApp:',e.message);showLogin();}
-  finally{document.getElementById('global-loading').style.display='none';}
-}
-async function loadProfile(authId){
-  try{
-    var r=await sb.from('users').select('*').eq('auth_id',authId).single();
-    if(r.error||!r.data){showLogin();return;}
-    APP.profile=r.data;
-    sb.from('users').update({last_login:new Date().toISOString(),login_count:(r.data.login_count||0)+1}).eq('auth_id',authId).then(function(){}).catch(function(){});
-    sb.from('audit_logs').insert({user_id:r.data.id,user_name:r.data.full_name,user_role:r.data.role,action:'LOGIN',details:'Logged in'}).then(function(){}).catch(function(){});
-    await loadSharedData();
-    showAppShell();
-  }catch(e){console.error('loadProfile:',e.message);showLogin();}
-}
-async function loadSharedData(){
-  try{
-    var settingsRows=await dbGetSettings();
-    if(settingsRows){APP.settings=parseSettings(settingsRows);}
-    else{APP.settings={areas:['Patamata','Benz Circle','Governorpet','Labbipet','MG Road'],sources:['Walk-in','Referral','Coaching Center','School Event','Other'],grades:['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'],statuses:['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped']};}
-    var uRes=await sb.from('users').select('*').order('full_name');
-    if(!uRes.error&&uRes.data){APP.allUsers=uRes.data;APP.teachers=uRes.data.filter(function(u){return u.role==='teacher'&&u.status==='active';});}
-    var leads=await dbGetLeads();
-    APP.leadsCache=leads;APP.leadsCacheTime=Date.now();
-  }catch(e){
-    console.error('loadSharedData:',e.message);
-    APP.settings={areas:[],sources:[],grades:[],statuses:[]};
-    APP.allUsers=[];APP.teachers=[];APP.leadsCache=[];APP.leadsCacheTime=0;
-  }
-}
-async function doLogin(){
-  var email=document.getElementById('login-email').value.trim().toLowerCase();
-  var password=document.getElementById('login-password').value;
-  var errEl=document.getElementById('login-error');
-  var btn=document.getElementById('login-btn');
-  errEl.classList.add('hidden');
-  if(!email||!password){errEl.textContent='Please enter email and password.';errEl.classList.remove('hidden');return;}
-  btn.textContent='Signing in...';btn.disabled=true;
-  try{
-    var r=await sb.auth.signInWithPassword({email:email,password:password});
-    if(r.error){errEl.textContent='Invalid email or password.';errEl.classList.remove('hidden');btn.textContent='Sign In';btn.disabled=false;return;}
-    document.getElementById('global-loading').style.display='flex';
-    document.getElementById('page-login').classList.add('hidden');
-    APP.user=r.data.user;
-    await loadProfile(r.data.user.id);
-    document.getElementById('global-loading').style.display='none';
-  }catch(e){
-    errEl.textContent='Something went wrong. Please try again.';errEl.classList.remove('hidden');
-    btn.textContent='Sign In';btn.disabled=false;
-    document.getElementById('global-loading').style.display='none';
-    document.getElementById('page-login').classList.remove('hidden');
-  }
-}
-async function doForgot(){
-  var email=document.getElementById('forgot-email').value.trim().toLowerCase();
-  var errEl=document.getElementById('forgot-error');
-  var btn=document.getElementById('forgot-btn');
-  errEl.classList.add('hidden');
-  if(!email){errEl.textContent='Please enter your email.';errEl.classList.remove('hidden');return;}
-  btn.textContent='Sending...';btn.disabled=true;
-  var r=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.href});
-  btn.textContent='Send Reset Link';btn.disabled=false;
-  if(r.error){errEl.textContent=r.error.message;errEl.classList.remove('hidden');return;}
-  document.getElementById('forgot-email-show').textContent=email;
-  document.getElementById('forgot-form-wrap').classList.add('hidden');
-  document.getElementById('forgot-sent').classList.remove('hidden');
-}
-async function doLogout(){
-  if(APP.profile){sb.from('audit_logs').insert({user_id:APP.profile.id,user_name:APP.profile.full_name,user_role:APP.profile.role,action:'LOGOUT',details:'Logged out'}).then(function(){}).catch(function(){});}
-  await sb.auth.signOut();
-  APP.user=null;APP.profile=null;APP.leadsCache=[];APP.charts={};
-  showLogin();
-}
-function showLogin(){
-  document.getElementById('page-login').classList.remove('hidden');
-  document.getElementById('page-forgot').classList.add('hidden');
-  document.getElementById('app-shell').classList.add('hidden');
-  var btn=document.getElementById('login-btn');
-  if(btn){btn.textContent='Sign In';btn.disabled=false;}
-}
-function showForgot(){
-  document.getElementById('page-forgot').classList.remove('hidden');
-  document.getElementById('page-login').classList.add('hidden');
-  document.getElementById('app-shell').classList.add('hidden');
-}
-function showAppShell(){
-  document.getElementById('page-login').classList.add('hidden');
-  document.getElementById('page-forgot').classList.add('hidden');
-  document.getElementById('app-shell').classList.remove('hidden');
-  buildSidebar();
-  var def=APP.profile.role==='teacher'?'teacher-home':APP.profile.role==='principal'?'principal-home':'admin-home';
-  navigate(def);
-}
-
-// ── SIDEBAR ──
-function buildSidebar(){
-  var p=APP.profile;
-  document.getElementById('sb-avatar').textContent=(p.full_name&&p.full_name.charAt(0).toUpperCase())||'U';
-  document.getElementById('sb-name').textContent=p.full_name;
-  var rb=document.getElementById('sb-role');rb.textContent=p.role;rb.className='sidebar-role role-'+p.role;
-  var ae=document.getElementById('sb-areas');
-  if(p.role==='teacher'&&p.areas&&p.areas!=='All Areas'){ae.textContent='📍 '+p.areas;ae.style.display='block';}
-  else{ae.style.display='none';}
-  var teacherLinks=[{id:'teacher-home',label:'Home'},{id:'submit-lead',label:'Submit Lead'},{id:'my-leads',label:'My Leads'},{id:'my-performance',label:'My Performance'}];
-  var principalLinks=[{id:'principal-home',label:'Home'},{id:'overview',label:'Overview'},{id:'teacher-perf',label:'Teacher Performance'},{id:'area-analysis',label:'Area Analysis'},{id:'funnel',label:'Funnel View'},{id:'all-leads',label:'All Leads'},{id:'visit-calendar',label:'Visit Calendar'},{id:'reports',label:'Reports'},{id:'user-mgmt',label:'Manage Users'}];
-  var adminLinks=[{id:'admin-home',label:'Home'},{id:'overview',label:'Overview'},{id:'teacher-perf',label:'Teacher Performance'},{id:'area-analysis',label:'Area Analysis'},{id:'funnel',label:'Funnel View'},{id:'all-leads',label:'All Leads'},{id:'visit-calendar',label:'Visit Calendar'},{id:'reports',label:'Reports'},{id:'user-mgmt',label:'User Management'},{id:'audit-logs',label:'Audit Logs'},{id:'sys-settings',label:'System Settings'}];
-  var links=p.role==='teacher'?teacherLinks:p.role==='principal'?principalLinks:adminLinks;
-  var html='';
-  links.forEach(function(l){html+='<button class="nav-item" id="nav-'+l.id+'" onclick="navigate(\''+l.id+'\')">'+l.label+'</button>';});
-  document.getElementById('sidebar-nav').innerHTML=html;
-}
-
-async function navigate(page){
-  Object.keys(APP.charts).forEach(function(k){try{APP.charts[k].destroy();}catch(e){}});
-  APP.charts={};APP.currentPage=page;APP.selectedLeadIds=[];
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  var activeEl=document.getElementById('nav-'+page);if(activeEl)activeEl.classList.add('active');
-  closeSidebar();
-  var c=document.getElementById('pages-container');
-  c.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:200px"><div class="spinner"></div></div>';
-  await renderPage(page,c);
-}
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebar-overlay').classList.add('open');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open');}
-
-async function renderPage(page,c){
-  if(page==='teacher-home')await pgTeacherHome(c);
-  else if(page==='submit-lead')await pgSubmitLead(c);
-  else if(page==='my-leads')await pgMyLeads(c);
-  else if(page==='my-performance')await pgMyPerformance(c);
-  else if(page==='principal-home'||page==='admin-home')await pgPrincipalHome(c);
-  else if(page==='overview')await pgOverview(c);
-  else if(page==='teacher-perf')await pgTeacherPerf(c);
-  else if(page==='area-analysis')await pgAreaAnalysis(c);
-  else if(page==='funnel')await pgFunnel(c);
-  else if(page==='all-leads')await pgAllLeads(c);
-  else if(page==='visit-calendar')await pgVisitCalendar(c);
-  else if(page==='reports')await pgReports(c);
-  else if(page==='user-mgmt')await pgUserMgmt(c);
-  else if(page==='audit-logs')await pgAuditLogs(c);
-  else if(page==='sys-settings')await pgSysSettings(c);
-  else c.innerHTML='<p style="padding:40px;color:var(--gray-400)">Page not found</p>';
-}
-
-// ── ALWAYS-VISIBLE LEADS TOOLBAR ──
-// showReassign: only for admin/principal
-function buildLeadsToolbar(tableId,showExport,countId,extraBtns){
-  var canReassign=isAdminOrPrincipal();
-  var html='<div class="leads-toolbar">';
-  html+='<div class="leads-toolbar-left">';
-  html+='<span class="selection-info" id="sel-info-'+tableId+'" style="display:none">0 leads selected</span>';
-  // Status update - everyone can do this
-  html+='<button class="btn btn-orange btn-sm" onclick="openBulkStatusModalFromToolbar(\''+tableId+'\')" title="Update status of selected leads">';
-  html+='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-  html+=' Update Status</button>';
-  // Reassign - only admin/principal
-  if(canReassign){
-    html+='<button class="btn btn-blue btn-sm" onclick="openReassignFromToolbar(\''+tableId+'\')" title="Reassign selected leads to another teacher">';
-    html+='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>';
-    html+=' Reassign</button>';
-  }
-  html+='<button class="btn btn-outline btn-sm" id="btn-clear-'+tableId+'" onclick="clearSelection(\''+tableId+'\')" style="display:none">Clear</button>';
-  html+='</div>';
-  html+='<div class="leads-toolbar-right">';
-  if(countId){html+='<span style="font-size:13px;color:var(--gray-500);font-weight:500" id="'+countId+'"></span>';}
-  if(extraBtns){html+=extraBtns;}
-  if(showExport){
-    html+='<button class="btn btn-green btn-sm" onclick="exportLeads()">'+iconSvg('download')+' Export</button>';
-  }
-  html+='</div></div>';
-  return html;
-}
-
-function openReassignFromToolbar(tableId){
-  if(!isAdminOrPrincipal()){toast('Only admin or principal can reassign leads','error');return;}
-  var ids=APP.selectedLeadIds||[];
-  if(ids.length===0){toast('Select at least one lead first','error');return;}
-  openReassignModal(ids);
-}
-
-// ── LEAD TABLE BUILDER (no View button, row click opens panel) ──
+// ════════════════════════════════════════════════
+// TABLE BUILDER
+// ════════════════════════════════════════════════
 function buildLeadRow(l,showTeacher,tableId){
   var canEdit=APP.profile.role==='teacher'?l.teacher_id===APP.profile.id:true;
-  var row='<tr class="clickable-row" onclick="handleRowClick(event,\''+l.id+'\')">';
+  var isOD=isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';
+  var row='<tr class="clickable-row'+(isOD?' overdue-lead':'')+'" onclick="handleRowClick(event,\''+l.id+'\')">';
   row+='<td onclick="event.stopPropagation()"><input type="checkbox" class="row-check row-cb" data-lid="'+l.id+'" onchange="toggleRowSelect(this,\''+l.id+'\',\''+tableId+'\')"'+(canEdit?'':' disabled')+'></td>';
   row+='<td style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--gray-500)">'+l.lead_id+'</td>';
   row+='<td>'+fmtDate(l.date)+'</td>';
@@ -1196,14 +1586,13 @@ function buildLeadRow(l,showTeacher,tableId){
   row+='<td>'+(l.area||'')+'</td>';
   if(showTeacher)row+='<td style="font-size:12px">'+(l.source||'')+'</td>';
   row+='<td onclick="event.stopPropagation()">'+buildInlineStatusSelect(l,canEdit)+'</td>';
-  row+='<td>'+fmtFollowUp(l.follow_up_date)+'</td>';
+  row+='<td>'+fmtFollowUp(l.follow_up_date,l.status)+'</td>';
   if(l.visit_date){row+='<td style="font-size:11px;color:var(--blue);font-weight:600">'+fmtDate(l.visit_date)+(l.visit_time?' '+l.visit_time:'')+'</td>';}
   else{row+='<td style="color:var(--gray-300);font-size:12px">—</td>';}
   row+='</tr>';
   return row;
 }
 
-// Row click handler: open panel unless clicked on interactive element
 function handleRowClick(event,leadId){
   var tag=event.target.tagName.toLowerCase();
   if(tag==='input'||tag==='select'||tag==='button'||tag==='a')return;
@@ -1232,7 +1621,77 @@ function buildTableHeader(showTeacher,tableId){
   return html;
 }
 
-// ── TEACHER HOME ──
+// ════════════════════════════════════════════════
+// OVERDUE PAGE
+// ════════════════════════════════════════════════
+async function pgOverdueLeads(c){
+  var all=await getLeads();
+  var p=APP.profile;
+  var leads=p.role==='teacher'?all.filter(function(l){return l.teacher_id===p.id;}):all;
+  var overdue=leads.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';});
+  overdue.sort(function(a,b){return new Date(a.follow_up_date)-new Date(b.follow_up_date);});
+
+  var byTeacher={};
+  overdue.forEach(function(l){
+    var k=l.teacher_name||'Unknown';
+    if(!byTeacher[k])byTeacher[k]=[];
+    byTeacher[k].push(l);
+  });
+
+  var html='<div class="page-header-row">';
+  html+='<div><h1>⚠ Overdue Follow-ups</h1><p style="color:var(--gray-500);font-size:13px;margin-top:4px">';
+  html+=overdue.length+' lead'+(overdue.length!==1?'s':'')+' past their follow-up date</p></div>';
+  html+='</div>';
+
+  if(overdue.length===0){
+    html+='<div style="text-align:center;padding:60px 20px;background:#fff;border-radius:16px;border:1px solid var(--gray-100)">';
+    html+='<div style="font-size:48px;margin-bottom:16px">🎉</div>';
+    html+='<h3 style="font-weight:700;color:var(--gray-900);margin-bottom:8px">All caught up!</h3>';
+    html+='<p style="color:var(--gray-500);font-size:13px">No overdue follow-ups. Keep up the great work.</p></div>';
+    c.innerHTML=html;
+    return;
+  }
+
+  // Summary stats
+  var critical=overdue.filter(function(l){return daysSinceOverdue(l.follow_up_date)>=7;}).length;
+  var warning=overdue.filter(function(l){var d=daysSinceOverdue(l.follow_up_date);return d>=3&&d<7;}).length;
+  var mild=overdue.filter(function(l){return daysSinceOverdue(l.follow_up_date)<3;}).length;
+
+  html+='<div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">';
+  html+=statCard('Total Overdue',overdue.length,'red');
+  html+=statCard('7+ Days',critical,'red');
+  html+=statCard('3-6 Days',warning,'yellow');
+  html+=statCard('1-2 Days',mild,'orange');
+  html+='</div>';
+
+  if(p.role!=='teacher'){
+    // Group by teacher for principal/admin
+    html+='<div class="card" style="margin-bottom:20px">';
+    html+='<div class="card-header"><div class="card-title">By Teacher</div></div>';
+    html+='<div class="table-wrap"><table><thead><tr><th>Teacher</th><th>Overdue Count</th><th>Most Critical</th></tr></thead><tbody>';
+    Object.entries(byTeacher).sort(function(a,b){return b[1].length-a[1].length;}).forEach(function(entry){
+      var t=entry[0],ls=entry[1];
+      var worst=ls[0];
+      var days=daysSinceOverdue(worst.follow_up_date);
+      html+='<tr><td style="font-weight:600">'+t+'</td>';
+      html+='<td><span style="background:var(--red);color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">'+ls.length+'</span></td>';
+      html+='<td><span style="color:var(--red);font-weight:700;font-size:13px">'+worst.student_name+'</span> <span style="font-size:11px;color:var(--gray-500)">— '+days+'d overdue</span></td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+  }
+
+  html+='<div class="card" style="padding:0"><div class="card-header" style="padding:16px 20px"><div class="card-title">All Overdue Leads</div></div>';
+  html+='<div class="table-wrap"><table id="od-table">';
+  html+=buildTableHeader(p.role!=='teacher','od-table');
+  html+='<tbody>';
+  overdue.forEach(function(l){html+=buildLeadRow(l,p.role!=='teacher','od-table');});
+  html+='</tbody></table></div></div>';
+  c.innerHTML=html;
+}
+
+// ════════════════════════════════════════════════
+// TEACHER HOME
+// ════════════════════════════════════════════════
 async function pgTeacherHome(c){
   var all=await getLeads();
   var leads=all.filter(function(l){return l.teacher_id===APP.profile.id;});
@@ -1253,13 +1712,22 @@ async function pgTeacherHome(c){
   html+=statCard('Overdue',overdue.length,overdue.length>0?'red':'purple');
   html+='</div>';
   if(overdue.length>0){
-    html+='<div class="alert alert-red" style="margin-bottom:20px">';
-    html+='<div class="alert-header">'+iconSvg('alert')+' Overdue Follow-ups ('+overdue.length+')</div>';
-    overdue.slice(0,3).forEach(function(l){
-      html+='<div class="overdue-row"><div><div style="font-weight:600;font-size:13px">'+l.student_name+'</div>';
-      html+='<div style="font-size:11px;color:var(--gray-500)">'+l.parent_name+' · '+l.area+'</div></div>';
-      html+='<div style="text-align:right">'+statusBadge(l.status)+'<div style="font-size:11px;color:var(--red);margin-top:4px">Due: '+fmtDate(l.follow_up_date)+'</div></div></div>';
+    html+='<div class="alert alert-red" style="margin-bottom:20px;cursor:pointer" onclick="navigate(\'overdue-leads\')">';
+    html+='<div class="alert-header">'+iconSvg('alert')+' '+overdue.length+' Overdue Follow-up'+(overdue.length>1?'s':'')+'  <span style="font-size:11px;font-weight:500;margin-left:auto;color:#b91c1c;text-decoration:underline">View all →</span></div>';
+    overdue.slice(0,2).forEach(function(l){
+      var days=daysSinceOverdue(l.follow_up_date);
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">';
+      html+='<div style="font-weight:600;font-size:13px">'+l.student_name+' <span style="background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:4px;font-weight:700;margin-left:6px">'+days+'d</span></div>';
+      html+=statusBadge(l.status)+'</div>';
     });
+    html+='</div>';
+  }
+  // Offline queue notice
+  if(APP.offlineQueue.length>0){
+    html+='<div class="alert alert-yellow" style="margin-bottom:20px">';
+    html+='<div class="alert-header">'+iconSvg('warning')+' '+APP.offlineQueue.length+' Lead'+(APP.offlineQueue.length>1?'s':'')+' Pending Sync</div>';
+    html+='<p style="font-size:13px;color:#92400e">These were saved offline and will sync automatically when you\'re back online.</p>';
+    html+='<button class="btn btn-sm btn-orange" style="margin-top:10px" onclick="retryQueue()">Retry Sync Now</button>';
     html+='</div>';
   }
   if(todayFU.length>0){
@@ -1276,9 +1744,10 @@ async function pgTeacherHome(c){
     html+='<div style="text-align:center;padding:30px;color:var(--gray-400)"><p style="margin-bottom:12px">No leads yet</p><button class="btn btn-orange btn-sm" onclick="navigate(\'submit-lead\')">Submit First Lead</button></div>';
   }else{
     recent.forEach(function(l){
-      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50);cursor:pointer" onclick="openPanelById(\''+l.id+'\')">';
-      html+='<div style="min-width:0;flex:1;margin-right:10px"><div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+l.student_name+'</div>';
-      html+='<div style="font-size:11px;color:var(--gray-500)">'+l.parent_name+' · '+l.area+' · '+fmtDate(l.date)+'</div></div>';
+      var isOD=isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-50);cursor:pointer;background:'+(isOD?'#fff5f5':'transparent')+'" onclick="openPanelById(\''+l.id+'\')">';
+      html+='<div style="min-width:0;flex:1;margin-right:10px"><div style="font-weight:600;font-size:13px">'+l.student_name+(isOD?'<span style="background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px;margin-left:6px;font-weight:700">OVERDUE</span>':'')+'</div>';
+      html+='<div style="font-size:11px;color:var(--gray-500)">'+l.parent_name+' · '+l.area+'</div></div>';
       html+=statusBadge(l.status)+'</div>';
     });
   }
@@ -1286,7 +1755,9 @@ async function pgTeacherHome(c){
   c.innerHTML=html;
 }
 
-// ── SUBMIT LEAD ──
+// ════════════════════════════════════════════════
+// SUBMIT LEAD (with offline + race-free ID)
+// ════════════════════════════════════════════════
 async function pgSubmitLead(c){
   var s=APP.settings||{};
   var teacherAreas=(APP.profile.areas==='All Areas'||!APP.profile.areas)?(s.areas||[]):parseAreas(APP.profile.areas);
@@ -1299,32 +1770,31 @@ async function pgSubmitLead(c){
   (s.sources||[]).forEach(function(src){srcOpts+='<option>'+src+'</option>';});
 
   var html='<div class="page-header"><h1>Submit New Lead</h1><p>Fill in student and parent details</p></div>';
+  if(!APP.isOnline){
+    html+='<div class="alert alert-yellow" style="margin-bottom:20px">';
+    html+='<div class="alert-header">'+iconSvg('warning')+' You\'re Offline</div>';
+    html+='<p style="font-size:13px;color:#92400e">Lead will be saved to your device and automatically submitted when you reconnect.</p></div>';
+  }
   html+='<div id="dup-warn" class="dup-warn hidden">';
   html+='<svg viewBox="0 0 24 24" width="18" height="18" fill="#d97706"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke="#fff" stroke-width="2"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#fff" stroke-width="2"/></svg>';
   html+='<div><strong style="display:block;margin-bottom:4px">Duplicate Phone Detected</strong><span id="dup-msg"></span></div></div>';
   html+='<div class="card">';
   html+='<div class="form-section-header">Student Details</div>';
-  html+='<div class="form-row">';
-  html+='<div class="form-group"><label>Student Name *</label><input type="text" id="f-student" placeholder="Full name"></div>';
-  html+='<div class="form-group"><label>Grade</label><select id="f-grade">'+gradeOpts+'</select></div>';
-  html+='</div>';
+  html+='<div class="form-row"><div class="form-group"><label>Student Name *</label><input type="text" id="f-student" placeholder="Full name"></div>';
+  html+='<div class="form-group"><label>Grade</label><select id="f-grade">'+gradeOpts+'</select></div></div>';
   html+='<div class="form-group"><label>Current School</label><input type="text" id="f-school" placeholder="Current school name"></div>';
   html+='<div class="form-section-header">Parent Details</div>';
-  html+='<div class="form-row">';
-  html+='<div class="form-group"><label>Parent Name *</label><input type="text" id="f-parent" placeholder="Father or mother name"></div>';
+  html+='<div class="form-row"><div class="form-group"><label>Parent Name *</label><input type="text" id="f-parent" placeholder="Father or mother name"></div>';
   html+='<div class="form-group"><label>Parent Phone * <span id="phone-status" style="font-size:11px;font-weight:600;margin-left:4px"></span></label>';
-  html+='<input type="tel" id="f-phone" placeholder="10-digit number" maxlength="10" oninput="onPhoneInput(this.value)"></div>';
-  html+='</div>';
+  html+='<input type="tel" id="f-phone" placeholder="10-digit number" maxlength="10" oninput="onPhoneInput(this.value)"></div></div>';
   html+='<div class="form-group"><label>Alternative Phone</label><input type="tel" id="f-alt" placeholder="Optional" maxlength="10"></div>';
   html+='<div class="form-section-header">Lead Details</div>';
-  html+='<div class="form-row">';
-  html+='<div class="form-group"><label>Area *</label><select id="f-area">'+areaOpts+'</select></div>';
-  html+='<div class="form-group"><label>Source *</label><select id="f-source">'+srcOpts+'</select></div>';
-  html+='</div>';
+  html+='<div class="form-row"><div class="form-group"><label>Area *</label><select id="f-area">'+areaOpts+'</select></div>';
+  html+='<div class="form-group"><label>Source *</label><select id="f-source">'+srcOpts+'</select></div></div>';
   html+='<div class="form-group"><label>Next Follow-up Date</label><input type="date" id="f-followup" min="'+todayStr()+'"></div>';
   html+='<div class="form-group"><label>Remarks</label><textarea id="f-remarks" rows="3" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 16px;font-size:14px;resize:none;font-family:inherit"></textarea></div>';
-  html+='<div style="background:var(--gray-50);border-radius:10px;padding:12px;font-size:12px;color:var(--gray-500);margin-bottom:16px">Auto-captured: Your name, ID, timestamp, Lead ID. Initial Status: Inquiry</div>';
-  html+='<button class="btn btn-orange" style="width:100%;padding:14px;font-size:14px" id="submit-btn" onclick="submitLead()">Submit Lead</button>';
+  html+='<div style="background:var(--gray-50);border-radius:10px;padding:12px;font-size:12px;color:var(--gray-500);margin-bottom:16px">Lead ID generated automatically (unique, race-condition-free). Initial status: Inquiry.</div>';
+  html+='<button class="btn btn-orange" style="width:100%;padding:14px;font-size:14px" id="submit-btn" onclick="submitLead()">'+(APP.isOnline?'Submit Lead':'Save Offline & Sync Later')+'</button>';
   html+='</div>';
   c.innerHTML=html;
 }
@@ -1337,21 +1807,20 @@ async function onPhoneInput(val){
   if(!st)return;
   var clean=normalizePhone(val);
   if(clean.length<10){st.textContent='';dw.classList.add('hidden');return;}
-  if(clean.length>10){
-    var inp=document.getElementById('f-phone');
-    if(inp)inp.value=clean.slice(0,10);
-    clean=clean.slice(0,10);
-  }
   st.textContent='Checking...';st.style.color='var(--blue)';
   phoneTimer=setTimeout(async function(){
-    var res=await dbCheckDuplicate(clean);
-    if(res.duplicate){
-      st.textContent='⚠ Duplicate';st.style.color='var(--yellow)';
-      document.getElementById('dup-msg').textContent='Submitted by '+res.existing.teacher_name+' on '+res.existing.date+' for '+res.existing.student_name+' ('+res.existing.status+').';
-      dw.classList.remove('hidden');
-    }else{
-      st.textContent='✓ Unique';st.style.color='var(--green)';
-      dw.classList.add('hidden');
+    try{
+      var res=await dbCheckDuplicate(clean);
+      if(res.duplicate){
+        st.textContent='⚠ Duplicate';st.style.color='var(--yellow)';
+        document.getElementById('dup-msg').textContent='Submitted by '+(res.existing.teacher_name||'someone')+' on '+res.existing.date+' for '+res.existing.student_name+' ('+res.existing.status+').';
+        dw.classList.remove('hidden');
+      }else{
+        st.textContent='✓ Unique';st.style.color='var(--green)';
+        dw.classList.add('hidden');
+      }
+    }catch(e){
+      st.textContent='';// offline — skip check
     }
   },600);
 }
@@ -1366,35 +1835,97 @@ async function submitLead(){
   if(phone.length!==10){toast('Please enter a valid 10-digit phone number','error');return;}
   if(!area){toast('Please select an area','error');return;}
   if(!source){toast('Please select a source','error');return;}
+
   var btn=document.getElementById('submit-btn');
-  btn.textContent='Submitting...';btn.disabled=true;
-  var leadId=await dbGetNextLeadId();
+  btn.textContent='Saving...';btn.disabled=true;
+
+  // Race-condition-free ID generation
+  var leadId=generateLeadId();
+
   var lead={
     lead_id:leadId,date:todayStr(),
     teacher_id:APP.profile.id,teacher_name:APP.profile.full_name,
     student_name:student,parent_name:parent,parent_phone:phone,
-    alt_phone:normalizePhone(gv('f-alt')),grade:gv('f-grade'),
+    alt_phone:normalizePhone(gv('f-alt')||''),grade:gv('f-grade'),
     current_school:gv('f-school'),area:area,source:source,
     status:'Inquiry',remarks:gv('f-remarks'),
     follow_up_date:gv('f-followup')
   };
-  var res=await dbAddLead(lead);
-  btn.disabled=false;
-  if(res){invalidateCache();toast('Lead '+leadId+' submitted!');setTimeout(function(){navigate('my-leads');},1200);}
-  else{btn.textContent='Submit Lead';toast('Failed to submit lead','error');}
+
+  if(!APP.isOnline){
+    // Save to offline queue
+    var qItem={id:leadId,lead:lead,savedAt:new Date().toISOString()};
+    APP.offlineQueue.push(qItem);
+    await idbSaveQueue(APP.offlineQueue);
+    updateOfflineBanner();
+    btn.disabled=false;
+    toastRich('Saved offline',leadId+' queued — will sync when online','warning');
+    setTimeout(function(){navigate('my-leads');},1800);
+    return;
+  }
+
+  try{
+    var res=await dbAddLead(lead);
+    btn.disabled=false;
+    if(res){
+      invalidateCache();
+      toast('Lead '+leadId+' submitted!');
+      setTimeout(function(){navigate('my-leads');},1200);
+    }
+  }catch(e){
+    btn.disabled=false;
+    btn.textContent='Submit Lead';
+    var errMsg=e.message||'Unknown error';
+    var isNetworkErr=errMsg.toLowerCase().includes('network')||errMsg.toLowerCase().includes('fetch')||errMsg.toLowerCase().includes('failed');
+    if(isNetworkErr){
+      // Auto-queue on network failure
+      var qItem2={id:leadId,lead:lead,savedAt:new Date().toISOString()};
+      APP.offlineQueue.push(qItem2);
+      await idbSaveQueue(APP.offlineQueue);
+      updateOfflineBanner();
+      toastRich('Saved offline','Network error — lead queued for retry','warning',
+        '<button class="toast-btn" onclick="retryQueue()">Retry Now</button>');
+    }else if(errMsg.includes('duplicate')||errMsg.includes('unique')){
+      toastRich('Duplicate entry','A lead with this phone/ID already exists. Refresh and check.','error');
+    }else{
+      toastRich('Submission failed',errMsg,'error',
+        '<button class="toast-btn" onclick="submitLead()">Try Again</button>');
+    }
+  }
 }
 
-// ── MY LEADS ──
+// ════════════════════════════════════════════════
+// MY LEADS
+// ════════════════════════════════════════════════
 async function pgMyLeads(c){
   var all=await getLeads();
   var leads=all.filter(function(l){return l.teacher_id===APP.profile.id;});
-  window._myLeads=leads;
-  var tableId='ml-table';
-  APP.currentTableId=tableId;
+  // Also show offline queue items
+  var offlineItems=APP.offlineQueue.map(function(q){return Object.assign({},q.lead,{_offline:true});});
+  var combined=leads.concat(offlineItems);
+  window._myLeads=combined;
+  var tableId='ml-table';APP.currentTableId=tableId;
   var statusOpts='<option>All</option>';
   ['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'].forEach(function(s){statusOpts+='<option>'+s+'</option>';});
 
+  var overdueCount=leads.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';}).length;
   var html='<div class="page-header-row"><div><h1>My Leads</h1></div></div>';
+  if (overdueCount > 0) {
+  html += '<div class="alert alert-red" style="cursor:pointer;margin-bottom:16px" onclick="navigate(\'overdue-leads\')">';
+  
+  html += '<div class="alert-header">' 
+       + iconSvg('alert') + ' ' 
+       + overdueCount + ' overdue follow-up' 
+       + (overdueCount > 1 ? 's' : '') 
+       + ' need attention'
+       + '<span style="font-size:11px;font-weight:500;margin-left:auto;text-decoration:underline">View →</span>'
+       + '</div></div>';
+}
+  if(offlineItems.length>0){
+    html+='<div class="alert alert-yellow" style="margin-bottom:16px">';
+    html+='<div class="alert-header">'+iconSvg('warning')+' '+offlineItems.length+' lead'+(offlineItems.length>1?'s':'')+' pending sync</div>';
+    html+='<button class="btn btn-sm btn-orange" onclick="retryQueue()">Sync Now</button></div>';
+  }
   html+=buildLeadsToolbar(tableId,false,'ml-count','');
   html+='<div class="card" style="padding:14px;margin-bottom:14px"><div style="display:flex;gap:10px;flex-wrap:wrap">';
   html+='<div style="flex:1;min-width:180px"><input type="text" id="ml-search" placeholder="Search by name or phone..." style="width:100%;border:1.5px solid var(--gray-200);border-radius:10px;padding:9px 14px;font-size:13px;font-family:inherit" oninput="filterMyLeads()"></div>';
@@ -1402,10 +1933,10 @@ async function pgMyLeads(c){
   html+='</div></div>';
   html+='<div class="card" style="padding:0"><div class="table-wrap"><table id="'+tableId+'">';
   html+=buildTableHeader(false,tableId);
-  html+='<tbody id="ml-tbody">'+buildLeadsTable(leads,false,tableId)+'</tbody>';
+  html+='<tbody id="ml-tbody">'+buildLeadsTable(combined,false,tableId)+'</tbody>';
   html+='</table></div></div>';
   c.innerHTML=html;
-  document.getElementById('ml-count').textContent=leads.length+' leads';
+  document.getElementById('ml-count').textContent=combined.length+' leads';
 }
 
 function filterMyLeads(){
@@ -1425,7 +1956,9 @@ function filterMyLeads(){
   if(cnt)cnt.textContent=r.length+' leads';
 }
 
-// ── MY PERFORMANCE ──
+// ════════════════════════════════════════════════
+// MY PERFORMANCE
+// ════════════════════════════════════════════════
 async function pgMyPerformance(c){
   var all=await getLeads();
   var leads=all.filter(function(l){return l.teacher_id===APP.profile.id;});
@@ -1452,9 +1985,7 @@ async function pgMyPerformance(c){
     html+='<thead><tr><th>Area</th><th>Leads</th><th>Admitted</th><th>Rate</th></tr></thead><tbody>';
     byArea.forEach(function(r2){
       var r3=calcRate(r2.total,r2.admitted);
-      html+='<tr><td style="font-weight:600">'+r2.area+'</td><td>'+r2.total+'</td>';
-      html+='<td style="color:var(--green);font-weight:600">'+r2.admitted+'</td>';
-      html+='<td><span class="'+rateClass(r3)+'">'+r3+'%</span></td></tr>';
+      html+='<tr><td style="font-weight:600">'+r2.area+'</td><td>'+r2.total+'</td><td style="color:var(--green);font-weight:600">'+r2.admitted+'</td><td><span class="'+rateClass(r3)+'">'+r3+'%</span></td></tr>';
     });
     html+='</tbody></table></div></div>';
   }
@@ -1464,14 +1995,16 @@ async function pgMyPerformance(c){
     var sre=document.getElementById('ch-source');
     if(se&&byStatus.some(function(v){return v>0;})){
       APP.charts.status=new Chart(se,{type:'bar',data:{labels:statuses,datasets:[{data:byStatus,backgroundColor:statuses.map(function(s){return statusColor(s)+'cc';}),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-    }else if(se){se.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-400);font-size:13px">No data yet</div>';}
+    }else if(se){se.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-400)">No data yet</div>';}
     if(sre&&srcData.length>0){
       APP.charts.source=new Chart(sre,{type:'doughnut',data:{labels:srcData.map(function(s){return s[0];}),datasets:[{data:srcData.map(function(s){return s[1].length;}),backgroundColor:['#f97316','#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
-    }else if(sre){sre.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--gray-400);font-size:13px">No data yet</div>';}
+    }
   });
 }
 
-// ── PRINCIPAL HOME ──
+// ════════════════════════════════════════════════
+// PRINCIPAL HOME
+// ════════════════════════════════════════════════
 async function pgPrincipalHome(c){
   var leads=await getLeads();
   var admitted=leads.filter(function(l){return l.status==='Admitted';}).length;
@@ -1487,8 +2020,8 @@ async function pgPrincipalHome(c){
   html+=statCard('Rate',rate+'%','orange');
   html+=statCard('Teachers',APP.teachers.length,'purple');
   html+=statCard('Overdue',overdue.length,overdue.length>0?'red':'green');
-  html+=statCard("Today's Leads",todayLeads.length,'yellow');
-  html+=statCard("Today's Visits",todayVisits.length,'blue');
+  html+=statCard("Today's",todayLeads.length,'yellow');
+  html+=statCard("Visits",todayVisits.length,'blue');
   html+='</div>';
   var qlItems=[
     {id:'overview',label:'Overview',bg:'#eff6ff'},
@@ -1496,7 +2029,8 @@ async function pgPrincipalHome(c){
     {id:'area-analysis',label:'Areas',bg:'#fff7ed'},
     {id:'funnel',label:'Funnel',bg:'#f5f3ff'},
     {id:'all-leads',label:'All Leads',bg:'#fdf4ff'},
-    {id:'visit-calendar',label:'Visit Cal',bg:'#ecfdf5'},
+    {id:'overdue-leads',label:'⚠ Overdue',bg:'#fef2f2'},
+    {id:'visit-calendar',label:'Visits',bg:'#ecfdf5'},
     {id:'reports',label:'Reports',bg:'#fffbeb'}
   ];
   html+='<div class="quick-links">';
@@ -1504,11 +2038,13 @@ async function pgPrincipalHome(c){
   html+='</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">';
   if(overdue.length>0){
-    html+='<div class="alert alert-red"><div class="alert-header">'+iconSvg('alert')+' Overdue ('+overdue.length+')</div>';
+    html+='<div class="alert alert-red" style="cursor:pointer" onclick="navigate(\'overdue-leads\')">';
+    html+='<div class="alert-header">'+iconSvg('alert')+' '+overdue.length+' Overdue <span style="font-size:11px;font-weight:500;margin-left:auto;text-decoration:underline">View all →</span></div>';
     overdue.slice(0,4).forEach(function(l){
-      html+='<div class="overdue-row" style="cursor:pointer" onclick="openPanelById(\''+l.id+'\')">';
+      var days=daysSinceOverdue(l.follow_up_date);
+      html+='<div class="overdue-row" style="cursor:pointer" onclick="event.stopPropagation();openPanelById(\''+l.id+'\')">';
       html+='<div><div style="font-weight:600;font-size:13px">'+l.student_name+'</div><div style="font-size:11px;color:var(--gray-500)">'+l.teacher_name+' · '+l.area+'</div></div>';
-      html+='<div style="text-align:right">'+statusBadge(l.status)+'<div style="font-size:11px;color:var(--red);margin-top:3px">'+fmtDate(l.follow_up_date)+'</div></div></div>';
+      html+='<div style="text-align:right">'+statusBadge(l.status)+'<div style="font-size:11px;color:var(--red);font-weight:700;margin-top:3px">'+days+'d overdue</div></div></div>';
     });
     html+='</div>';
   }else{html+='<div></div>';}
@@ -1521,20 +2057,24 @@ async function pgPrincipalHome(c){
   });
   html+='</div></div>';
   html+='<div class="card" style="margin-top:20px"><div class="card-header"><div class="card-title">Teacher Overview</div></div>';
-  html+='<div class="table-wrap"><table><thead><tr><th>Teacher</th><th>Assigned Areas</th><th>Leads</th><th>Admitted</th><th>Rate</th></tr></thead><tbody>';
+  html+='<div class="table-wrap"><table><thead><tr><th>Teacher</th><th>Areas</th><th>Leads</th><th>Admitted</th><th>Overdue</th><th>Rate</th></tr></thead><tbody>';
   APP.teachers.forEach(function(t){
     var tl=leads.filter(function(l){return l.teacher_id===t.id;});
     var ta=tl.filter(function(l){return l.status==='Admitted';}).length;
+    var tod=tl.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';}).length;
     var tr2=calcRate(tl.length,ta);
     html+='<tr><td style="font-weight:600">'+t.full_name+'</td><td style="font-size:12px;color:var(--gray-500)">'+(t.areas||'Not assigned')+'</td>';
     html+='<td style="color:var(--blue);font-weight:600">'+tl.length+'</td><td style="color:var(--green);font-weight:600">'+ta+'</td>';
+    html+='<td>'+(tod>0?'<span style="color:var(--red);font-weight:700">'+tod+'</span>':'<span style="color:var(--green)">0</span>')+'</td>';
     html+='<td><span class="'+rateClass(tr2)+'">'+tr2+'%</span></td></tr>';
   });
   html+='</tbody></table></div></div>';
   c.innerHTML=html;
 }
 
-// ── FILTER BAR ──
+// ════════════════════════════════════════════════
+// FILTER BAR
+// ════════════════════════════════════════════════
 function buildFilterBar(){
   var s=APP.settings||{};
   var teacherOpts='<option value="">All Teachers</option>';
@@ -1557,23 +2097,17 @@ function buildFilterBar(){
     '<div><label>Grade</label><select id="f-grade-f">'+gradeOpts+'</select></div>'+
     '<div><label>From Date</label><input type="date" id="f-from"></div>'+
     '<div><label>To Date</label><input type="date" id="f-to"></div>'+
-    '</div>'+
-    '<div class="filter-actions" style="margin-top:14px">'+
+    '</div><div class="filter-actions" style="margin-top:14px">'+
     '<button class="btn btn-orange" onclick="applyFilters()">Apply</button>'+
     '<button class="btn btn-outline" onclick="resetFilters()">Reset</button>'+
     '</div></div>';
 }
-
 function getFilters(){
   function gv(id){var e=document.getElementById(id);return e?e.value:'';}
   return{search:gv('f-search'),teacher_id:gv('f-teacher'),area:gv('f-area-f'),status:gv('f-status-f'),source:gv('f-source-f'),grade:gv('f-grade-f'),from_date:gv('f-from'),to_date:gv('f-to')};
 }
-
 function applyFilters(){
   var f=getFilters();
-  var hasActive=Object.values(f).some(function(v){return v!=='';});
-  var badge=document.getElementById('filter-badge');
-  if(badge)badge.classList.toggle('hidden',!hasActive);
   var filtered=filterLeads(APP.leadsCache,f);
   var p=APP.currentPage;
   if(p==='overview')drawOverview(filtered);
@@ -1587,15 +2121,14 @@ function applyFilters(){
     if(cnt)cnt.textContent=filtered.length+' leads';
   }
 }
-
 function resetFilters(){
   ['f-search','f-teacher','f-area-f','f-status-f','f-source-f','f-grade-f','f-from','f-to'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
-  var badge=document.getElementById('filter-badge');
-  if(badge)badge.classList.add('hidden');
   applyFilters();
 }
 
-// ── OVERVIEW ──
+// ════════════════════════════════════════════════
+// OVERVIEW
+// ════════════════════════════════════════════════
 async function pgOverview(c){
   c.innerHTML=buildFilterBar()+'<div class="page-header"><h1>Overview Dashboard</h1></div><div id="ov-content"></div>';
   drawOverview(APP.leadsCache);
@@ -1604,13 +2137,14 @@ function drawOverview(leads){
   Object.keys(APP.charts).forEach(function(k){try{APP.charts[k].destroy();}catch(e){}});APP.charts={};
   var admitted=leads.filter(function(l){return l.status==='Admitted';}).length;
   var dropped=leads.filter(function(l){return l.status==='Dropped';}).length;
+  var overdue=leads.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';}).length;
   var statuses=['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
   var oc=document.getElementById('ov-content');if(!oc)return;
   var html='<div class="stat-grid">';
-  html+=statCard('Total Leads',leads.length,'blue');
+  html+=statCard('Total',leads.length,'blue');
   html+=statCard('Admitted',admitted,'green');
   html+=statCard('Rate',calcRate(leads.length,admitted)+'%','orange');
-  html+=statCard('Dropped',dropped,'red');
+  html+=statCard('Overdue',overdue,'red');
   html+='</div>';
   html+='<div class="chart-grid">';
   html+='<div class="card"><div class="card-title" style="margin-bottom:14px">Admission Funnel</div><div class="chart-container"><canvas id="ch-fn"></canvas></div></div>';
@@ -1622,16 +2156,16 @@ function drawOverview(leads){
   var dailyData=Object.entries(groupBy(leads,'date')).sort(function(a,b){return new Date(a[0])-new Date(b[0]);}).slice(-30);
   var funnelCounts=statuses.map(function(s){return leads.filter(function(l){return l.status===s;}).length;});
   requestAnimationFrame(function(){
-    var fne=document.getElementById('ch-fn');
-    var srce=document.getElementById('ch-src');
-    var de=document.getElementById('ch-daily');
+    var fne=document.getElementById('ch-fn'),srce=document.getElementById('ch-src'),de=document.getElementById('ch-daily');
     if(fne)APP.charts.fn=new Chart(fne,{type:'bar',data:{labels:statuses,datasets:[{data:funnelCounts,backgroundColor:statuses.map(function(s){return statusColor(s)+'cc';}),borderRadius:6}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
     if(srce&&srcData.length>0)APP.charts.src=new Chart(srce,{type:'doughnut',data:{labels:srcData.map(function(s){return s[0];}),datasets:[{data:srcData.map(function(s){return s[1].length;}),backgroundColor:['#f97316','#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
     if(de&&dailyData.length>0)APP.charts.daily=new Chart(de,{type:'line',data:{labels:dailyData.map(function(d){return d[0];}),datasets:[{label:'Leads',data:dailyData.map(function(d){return d[1].length;}),borderColor:'#f97316',backgroundColor:'rgba(249,115,22,.1)',fill:true,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{ticks:{maxRotation:45,font:{size:10}}}}}});
   });
 }
 
-// ── TEACHER PERFORMANCE ──
+// ════════════════════════════════════════════════
+// TEACHER PERFORMANCE
+// ════════════════════════════════════════════════
 async function pgTeacherPerf(c){
   c.innerHTML=buildFilterBar()+'<div class="page-header"><h1>Teacher Performance</h1></div><div id="tp-content"></div>';
   drawTeacherPerf(APP.leadsCache);
@@ -1641,7 +2175,7 @@ function drawTeacherPerf(leads){
   var stats=APP.teachers.map(function(t){
     var tl=leads.filter(function(l){return l.teacher_id===t.id;});
     var ad=tl.filter(function(l){return l.status==='Admitted';}).length;
-    return{id:t.id,full_name:t.full_name,areas:t.areas,total:tl.length,admitted:ad,dropped:tl.filter(function(l){return l.status==='Dropped';}).length,active:tl.filter(function(l){return l.status!=='Admitted'&&l.status!=='Dropped';}).length,rate:calcRate(tl.length,ad)};
+    return{id:t.id,full_name:t.full_name,areas:t.areas,total:tl.length,admitted:ad,dropped:tl.filter(function(l){return l.status==='Dropped';}).length,active:tl.filter(function(l){return l.status!=='Admitted'&&l.status!=='Dropped';}).length,overdue:tl.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';}).length,rate:calcRate(tl.length,ad)};
   }).sort(function(a,b){return b.total-a.total;});
   var ns=stats.filter(function(t){return t.rate<15&&t.total>0;});
   var tc=document.getElementById('tp-content');if(!tc)return;
@@ -1650,8 +2184,7 @@ function drawTeacherPerf(leads){
     var medals=['🥇','🥈','🥉'];
     html+='<div class="top3-grid">';
     stats.slice(0,3).forEach(function(t,i){
-      html+='<div class="top3-card"><div class="top3-medal">'+medals[i]+'</div>';
-      html+='<div class="top3-name">'+t.full_name+'</div>';
+      html+='<div class="top3-card"><div class="top3-medal">'+medals[i]+'</div><div class="top3-name">'+t.full_name+'</div>';
       html+='<div class="top3-areas">'+(t.areas||'—')+'</div>';
       html+='<div class="top3-stats">';
       html+='<div class="top3-stat"><div class="top3-stat-val" style="color:var(--blue)">'+t.total+'</div><div class="top3-stat-label">Leads</div></div>';
@@ -1663,16 +2196,13 @@ function drawTeacherPerf(leads){
   }
   html+='<div class="card"><div class="card-title" style="margin-bottom:14px">Leads vs Admissions</div><div style="height:220px"><canvas id="ch-tbar"></canvas></div></div>';
   html+='<div class="card"><div class="card-header"><div class="card-title">Complete Report</div></div>';
-  html+='<div class="table-wrap"><table>';
-  html+='<thead><tr><th>#</th><th>Teacher</th><th>Areas</th><th>Total</th><th>Admitted</th><th>Dropped</th><th>Active</th><th>Rate</th></tr></thead><tbody>';
+  html+='<div class="table-wrap"><table><thead><tr><th>#</th><th>Teacher</th><th>Areas</th><th>Total</th><th>Admitted</th><th>Overdue</th><th>Active</th><th>Rate</th></tr></thead><tbody>';
   stats.forEach(function(t,i){
-    html+='<tr><td style="color:var(--gray-400);font-weight:700">#'+(i+1)+'</td>';
-    html+='<td style="font-weight:600">'+t.full_name+'</td>';
+    html+='<tr><td style="color:var(--gray-400);font-weight:700">#'+(i+1)+'</td><td style="font-weight:600">'+t.full_name+'</td>';
     html+='<td style="font-size:12px;color:var(--gray-500);max-width:130px;overflow:hidden;text-overflow:ellipsis">'+(t.areas||'—')+'</td>';
-    html+='<td style="color:var(--blue);font-weight:600">'+t.total+'</td>';
-    html+='<td style="color:var(--green);font-weight:600">'+t.admitted+'</td>';
-    html+='<td style="color:var(--red)">'+t.dropped+'</td><td>'+t.active+'</td>';
-    html+='<td><span class="'+rateClass(t.rate)+'">'+t.rate+'%</span></td></tr>';
+    html+='<td style="color:var(--blue);font-weight:600">'+t.total+'</td><td style="color:var(--green);font-weight:600">'+t.admitted+'</td>';
+    html+='<td>'+(t.overdue>0?'<span style="color:var(--red);font-weight:700">'+t.overdue+'</span>':'<span style="color:var(--green)">0</span>')+'</td>';
+    html+='<td>'+t.active+'</td><td><span class="'+rateClass(t.rate)+'">'+t.rate+'%</span></td></tr>';
   });
   html+='</tbody></table></div></div>';
   if(ns.length>0){
@@ -1688,9 +2218,11 @@ function drawTeacherPerf(leads){
   });
 }
 
-// ── AREA ANALYSIS ──
+// ════════════════════════════════════════════════
+// AREA ANALYSIS
+// ════════════════════════════════════════════════
 async function pgAreaAnalysis(c){
-  c.innerHTML=buildFilterBar()+'<div class="page-header"><h1>Area Analysis</h1><p>Click a row to see leads from that area</p></div><div id="aa-content"></div>';
+  c.innerHTML=buildFilterBar()+'<div class="page-header"><h1>Area Analysis</h1></div><div id="aa-content"></div>';
   drawAreaAnalysis(APP.leadsCache);
 }
 function drawAreaAnalysis(leads){
@@ -1737,17 +2269,18 @@ function toggleDrill(area){
   html+='<div class="table-wrap"><table><thead><tr><th>Lead ID</th><th>Student</th><th>Parent</th><th>Teacher</th><th>Status</th></tr></thead><tbody>';
   ls.forEach(function(l){
     html+='<tr class="clickable-row" onclick="openPanelById(\''+l.id+'\')">';
-    html+='<td style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--gray-500)">'+l.lead_id+'</td>';
+    html+='<td style="font-family:\'DM Mono\',monospace;font-size:11px">'+l.lead_id+'</td>';
     html+='<td style="font-weight:600">'+l.student_name+'</td>';
-    html+='<td>'+l.parent_name+'</td>';
-    html+='<td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
+    html+='<td>'+l.parent_name+'</td><td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
     html+='<td>'+statusBadge(l.status)+'</td></tr>';
   });
   html+='</tbody></table></div></div>';
   row.querySelector('td').innerHTML=html;
 }
 
-// ── FUNNEL ──
+// ════════════════════════════════════════════════
+// FUNNEL
+// ════════════════════════════════════════════════
 async function pgFunnel(c){
   c.innerHTML=buildFilterBar()+'<div class="page-header"><h1>Funnel Deep Dive</h1></div><div id="fn-content"></div>';
   drawFunnel(APP.leadsCache);
@@ -1756,10 +2289,7 @@ function drawFunnel(leads){
   Object.keys(APP.charts).forEach(function(k){try{APP.charts[k].destroy();}catch(e){}});APP.charts={};
   var statuses=['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
   var counts=statuses.map(function(s){return leads.filter(function(l){return l.status===s;}).length;});
-  var stuck=leads.filter(function(l){
-    if(!l.follow_up_date||l.status==='Admitted'||l.status==='Dropped')return false;
-    return(Date.now()-new Date(l.follow_up_date).getTime())/86400000>7;
-  });
+  var stuck=leads.filter(function(l){if(!l.follow_up_date||l.status==='Admitted'||l.status==='Dropped')return false;return(Date.now()-new Date(l.follow_up_date).getTime())/86400000>7;});
   var fc=document.getElementById('fn-content');if(!fc)return;
   var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-bottom:20px">';
   statuses.forEach(function(s,i){
@@ -1787,12 +2317,14 @@ function drawFunnel(leads){
   });
 }
 
-// ── ALL LEADS ──
+// ════════════════════════════════════════════════
+// ALL LEADS
+// ════════════════════════════════════════════════
 async function pgAllLeads(c){
   var tableId='al-table';
   APP.currentTableId=tableId;
   window._allLeads=APP.leadsCache;
-  var exportBtn='<button class="btn btn-green btn-sm" onclick="exportLeads()">'+iconSvg('download')+' Export Excel</button>';
+  var exportBtn='<button class="btn btn-green btn-sm" onclick="exportLeads()">'+iconSvg('download')+' Export</button>';
   var html=buildFilterBar();
   html+='<div class="page-header-row"><div><h1>All Leads</h1></div></div>';
   html+=buildLeadsToolbar(tableId,false,'al-count',exportBtn);
@@ -1803,7 +2335,6 @@ async function pgAllLeads(c){
   c.innerHTML=html;
   document.getElementById('al-count').textContent=APP.leadsCache.length+' leads';
 }
-
 function exportLeads(){
   var leads=window._allLeads||[];
   if(!leads.length){toast('No data','error');return;}
@@ -1813,17 +2344,17 @@ function exportLeads(){
   toast('Excel downloaded!');
 }
 
-// ── VISIT CALENDAR ──
+// ════════════════════════════════════════════════
+// VISIT CALENDAR
+// ════════════════════════════════════════════════
 async function pgVisitCalendar(c){
   var leads=await getLeads();
   var role=APP.profile.role;
   var visitable=role==='teacher'?leads.filter(function(l){return l.teacher_id===APP.profile.id&&l.visit_date;}):leads.filter(function(l){return l.visit_date;});
-
   var today=new Date();
   var weekStart=new Date(today);
   weekStart.setDate(today.getDate()-today.getDay());
-
-  var html='<div class="page-header-row"><div><h1>Visit Calendar</h1><p>'+(role==='teacher'?'Your scheduled visits':'All scheduled visits across teachers')+'</p></div>';
+  var html='<div class="page-header-row"><div><h1>Visit Calendar</h1></div>';
   html+='<div style="display:flex;gap:8px"><button class="btn btn-outline" onclick="shiftWeek(-1)">← Prev</button><button class="btn btn-outline" onclick="shiftWeek(1)">Next →</button></div></div>';
   html+='<div id="cal-wrap"></div>';
   html+='<div class="card" style="margin-top:20px"><div class="card-header"><div class="card-title">All Scheduled Visits</div></div>';
@@ -1834,33 +2365,26 @@ async function pgVisitCalendar(c){
     html+='<td style="font-weight:600;color:var(--blue)">'+fmtDate(l.visit_date)+'</td>';
     html+='<td><span style="background:var(--orange-light);color:var(--orange);padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600">'+(l.visit_time||'—')+'</span></td>';
     html+='<td style="font-weight:600">'+l.student_name+'</td>';
-    html+='<td>'+l.parent_name+'</td>';
-    html+='<td style="font-size:12px;color:var(--gray-500)">'+l.parent_phone+'</td>';
+    html+='<td>'+l.parent_name+'</td><td style="font-size:12px;color:var(--gray-500)">'+l.parent_phone+'</td>';
     if(role!=='teacher')html+='<td style="font-size:12px">'+(l.teacher_name||'')+'</td>';
-    html+='<td>'+l.area+'</td>';
-    html+='</tr>';
+    html+='<td>'+l.area+'</td></tr>';
   });
-  if(sorted.length===0)html+='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400)">No visits scheduled yet</td></tr>';
+  if(sorted.length===0)html+='<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--gray-400)">No visits scheduled</td></tr>';
   html+='</tbody></table></div></div>';
   c.innerHTML=html;
-
-  window._calVisits=visitable;
-  window._calWeekStart=weekStart;
+  window._calVisits=visitable;window._calWeekStart=weekStart;
   renderCalWeek(weekStart,visitable);
 }
-
 function shiftWeek(dir){
   var ws=window._calWeekStart||new Date();
   ws.setDate(ws.getDate()+(dir*7));
   window._calWeekStart=ws;
   renderCalWeek(ws,window._calVisits||[]);
 }
-
 function renderCalWeek(weekStart,visits){
   var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var html='<div class="card"><div class="card-header"><div class="card-title">Week of '+months[weekStart.getMonth()]+' '+weekStart.getDate()+', '+weekStart.getFullYear()+'</div></div>';
-  html+='<div class="visit-cal">';
+  var html='<div class="card"><div class="card-header"><div class="card-title">Week of '+months[weekStart.getMonth()]+' '+weekStart.getDate()+', '+weekStart.getFullYear()+'</div></div><div class="visit-cal">';
   for(var i=0;i<7;i++){
     var day=new Date(weekStart);day.setDate(weekStart.getDate()+i);
     var dayStr=day.toISOString().split('T')[0];
@@ -1870,8 +2394,7 @@ function renderCalWeek(weekStart,visits){
       '<div class="visit-day-label">'+days[day.getDay()]+'</div>'+
       '<div class="visit-day-date" style="color:'+(isToday?'var(--orange)':'var(--gray-900)')+'">'+day.getDate()+'</div>';
     dayVisits.forEach(function(v){
-      html+='<div class="visit-chip" onclick="openPanelById(\''+v.id+'\')" title="'+v.student_name+' · '+(v.visit_time||'')+'">'+
-        (v.visit_time||'')+(v.visit_time?' · ':'')+v.student_name.split(' ')[0]+'</div>';
+      html+='<div class="visit-chip" onclick="openPanelById(\''+v.id+'\')">'+(v.visit_time||'')+' '+v.student_name.split(' ')[0]+'</div>';
     });
     if(dayVisits.length===0)html+='<div style="font-size:11px;color:var(--gray-300)">No visits</div>';
     html+='</div>';
@@ -1881,20 +2404,24 @@ function renderCalWeek(weekStart,visits){
   if(wrap)wrap.innerHTML=html;
 }
 
-// ── REPORTS ──
+// ════════════════════════════════════════════════
+// REPORTS
+// ════════════════════════════════════════════════
 async function pgReports(c){
   var leads=APP.leadsCache;
   var admitted=leads.filter(function(l){return l.status==='Admitted';}).length;
+  var overdue=leads.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';}).length;
   var html='<div class="page-header"><h1>Reports</h1></div>';
   html+='<div class="stat-grid">';
   html+=statCard('Total Leads',leads.length,'blue');
   html+=statCard('Admitted',admitted,'green');
   html+=statCard('Rate',calcRate(leads.length,admitted)+'%','orange');
+  html+=statCard('Overdue',overdue,'red');
   html+='</div>';
   html+='<div class="card"><div style="display:flex;align-items:flex-start;gap:16px">';
   html+='<div style="width:48px;height:48px;background:var(--orange-light);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--orange);font-size:24px">📊</div>';
   html+='<div><div style="font-weight:700;font-size:15px;margin-bottom:6px">Full Season Report</div>';
-  html+='<p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Downloads Excel with 3 sheets: All Leads, Teacher Summary, Area Summary.</p>';
+  html+='<p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Downloads Excel with 4 sheets: All Leads, Teacher Summary, Area Summary, Overdue Report.</p>';
   html+='<button class="btn btn-orange" onclick="exportFullReport()">'+iconSvg('download')+' Download Excel</button></div></div></div>';
   c.innerHTML=html;
 }
@@ -1906,7 +2433,8 @@ function exportFullReport(){
   var ts=APP.teachers.map(function(t){
     var tl=leads.filter(function(l){return l.teacher_id===t.id;});
     var ad=tl.filter(function(l){return l.status==='Admitted';}).length;
-    return{Teacher:t.full_name,'Assigned Areas':t.areas,'Total Leads':tl.length,Admitted:ad,Dropped:tl.filter(function(l){return l.status==='Dropped';}).length,Rate:calcRate(tl.length,ad)+'%'};
+    var od=tl.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';}).length;
+    return{Teacher:t.full_name,'Assigned Areas':t.areas,'Total Leads':tl.length,Admitted:ad,Overdue:od,Dropped:tl.filter(function(l){return l.status==='Dropped';}).length,Rate:calcRate(tl.length,ad)+'%'};
   });
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(ts),'Teacher Summary');
   var as=Object.entries(groupBy(leads,'area')).map(function(e){
@@ -1914,17 +2442,26 @@ function exportFullReport(){
     return{Area:e[0],Total:ls.length,Admitted:ad,Dropped:ls.filter(function(l){return l.status==='Dropped';}).length,Rate:calcRate(ls.length,ad)+'%'};
   });
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(as),'Area Summary');
+  var odLeads=leads.filter(function(l){return isOverdue(l.follow_up_date)&&l.status!=='Admitted'&&l.status!=='Dropped';}).map(function(l){return{Lead_ID:l.lead_id,Student:l.student_name,Parent:l.parent_name,Phone:l.parent_phone,Teacher:l.teacher_name,Area:l.area,Status:l.status,Follow_Up:l.follow_up_date,Days_Overdue:daysSinceOverdue(l.follow_up_date)};});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(odLeads),'Overdue');
   XLSX.writeFile(wb,'Report_'+new Date().toLocaleDateString('en-IN').replace(/\//g,'-')+'.xlsx');
   toast('Report downloaded!');
 }
 
-// ── USER MANAGEMENT ──
+// ════════════════════════════════════════════════
+// USER MANAGEMENT (with Add User button)
+// ════════════════════════════════════════════════
 async function pgUserMgmt(c){
   await loadSharedData();
   var isAdmin=APP.profile.role==='admin';
-  var html='<div class="page-header-row"><div><h1>User Management</h1><p>'+(isAdmin?'Manage all user accounts':'Assign areas to teachers')+'</p></div></div>';
+  var isPrincipalOrAdmin=isAdminOrPrincipal();
+  var html='<div class="page-header-row"><div><h1>User Management</h1></div>';
+  if(isPrincipalOrAdmin){
+    html+='<button class="btn btn-orange" onclick="openAddUserModal()">'+iconSvg('plus')+' Add User</button>';
+  }
+  html+='</div>';
   html+='<div class="card" style="padding:0"><div class="table-wrap"><table>';
-  html+='<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Assigned Areas</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+  html+='<thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Areas</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
   APP.allUsers.forEach(function(u){
     var roleColor=u.role==='admin'?'#fde8e8':u.role==='principal'?'#e8f0fe':'#def7ec';
     var roleTxt=u.role==='admin'?'#c53030':u.role==='principal'?'#1a56db':'#03543f';
@@ -1934,25 +2471,26 @@ async function pgUserMgmt(c){
     html+='<div style="width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;flex-shrink:0">'+(u.full_name&&u.full_name.charAt(0)||'U')+'</div>';
     html+='<span style="font-weight:600">'+u.full_name+'</span></div></td>';
     html+='<td style="font-size:12px;color:var(--gray-500)">'+u.email+'</td>';
-    html+='<td style="font-size:12px;color:var(--gray-500)">'+u.phone+'</td>';
+    html+='<td style="font-size:12px;color:var(--gray-500)">'+(u.phone||'—')+'</td>';
     html+='<td><span class="badge" style="background:'+roleColor+';color:'+roleTxt+'">'+u.role+'</span></td>';
     html+='<td style="font-size:12px;color:var(--gray-500);max-width:160px">';
     if(u.role==='teacher'){
       html+='<div style="display:flex;align-items:center;gap:8px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">'+(u.areas||'Not assigned')+'</span>';
-      html+='<button onclick="openAreaModal(\''+u.id+'\',\''+u.full_name+'\',\''+(u.areas||'')+'\')" style="background:none;border:none;color:var(--orange);cursor:pointer;flex-shrink:0" title="Assign areas">📍</button></div>';
+      html+='<button onclick="openAreaModal(\''+u.id+'\',\''+u.full_name+'\',\''+(u.areas||'')+'\')" style="background:none;border:none;color:var(--orange);cursor:pointer;flex-shrink:0">📍</button></div>';
     }else{html+='—';}
     html+='</td>';
     html+='<td><span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:'+stBg+';color:'+stTxt+'">'+u.status+'</span></td>';
     html+='<td><div style="display:flex;gap:6px">';
-    if(u.role==='teacher'){html+='<button onclick="openAreaModal(\''+u.id+'\',\''+u.full_name+'\',\''+(u.areas||'')+'\')" class="btn btn-sm btn-outline" style="padding:5px 8px" title="Assign areas">📍</button>';}
+    if(u.role==='teacher'){html+='<button onclick="openAreaModal(\''+u.id+'\',\''+u.full_name+'\',\''+(u.areas||'')+'\')" class="btn btn-sm btn-outline" style="padding:5px 8px" title="Areas">📍</button>';}
     if(isAdmin){
-      html+='<button onclick="resetPwd(\''+u.email+'\',\''+u.full_name+'\')" class="btn btn-sm btn-outline" style="padding:5px 8px" title="Reset password">🔑</button>';
+      html+='<button onclick="resetPwd(\''+u.email+'\',\''+u.full_name+'\')" class="btn btn-sm btn-outline" style="padding:5px 8px" title="Reset Password">🔑</button>';
       html+='<button onclick="toggleStatus(\''+u.id+'\',\''+u.status+'\',\''+u.full_name+'\')" class="btn btn-sm btn-outline" style="padding:5px 8px">'+(u.status==='active'?'🚫':'✅')+'</button>';
     }
     html+='</div></td></tr>';
   });
   html+='</tbody></table></div></div>';
-  html+='<div class="alert alert-blue" style="margin-top:16px"><div class="alert-header">ℹ Area Assignment</div><p style="font-size:13px;color:var(--blue)">Click 📍 to assign areas. Admin can also reset passwords 🔑 and enable/disable accounts.</p></div>';
+  html+='<div class="alert alert-blue" style="margin-top:16px"><div class="alert-header">ℹ User Permissions</div>';
+  html+='<p style="font-size:13px;color:var(--blue)">Admin and Principal can add new users. Click 📍 to assign areas to teachers. Admin can also 🔑 reset passwords and enable/disable accounts.</p></div>';
   c.innerHTML=html;
 }
 
@@ -2004,7 +2542,9 @@ async function toggleStatus(uid,current,name){
   await pgUserMgmt(document.getElementById('pages-container'));
 }
 
-// ── AUDIT LOGS ──
+// ════════════════════════════════════════════════
+// AUDIT LOGS
+// ════════════════════════════════════════════════
 async function pgAuditLogs(c){
   var r=await sb.from('audit_logs').select('*').order('created_at',{ascending:false}).limit(500);
   var all=r.error?[]:(r.data||[]);
@@ -2043,7 +2583,9 @@ function exportAudit(){
   toast('Exported!');
 }
 
-// ── SYSTEM SETTINGS ──
+// ════════════════════════════════════════════════
+// SYSTEM SETTINGS
+// ════════════════════════════════════════════════
 async function pgSysSettings(c){
   var s=APP.settings||{};
   var lists=[{key:'areas',label:'Areas'},{key:'sources',label:'Sources'},{key:'grades',label:'Grades'},{key:'statuses',label:'Statuses'}];
@@ -2058,7 +2600,6 @@ async function pgSysSettings(c){
     html+='</div></div>';
   });
   html+='</div>';
-  html+='<div class="alert alert-blue" style="margin-top:8px"><div class="alert-header">ℹ How Settings Work</div><p style="font-size:13px;color:var(--blue)">All changes save to Supabase settings table. Dropdowns update immediately on next page load.</p></div>';
   c.innerHTML=html;
 }
 function addSetting(key){var val=prompt('Enter new value:');if(!val||!val.trim())return;if(!APP.settings[key])APP.settings[key]=[];APP.settings[key].push(val.trim());refreshChips(key);}
@@ -2077,67 +2618,144 @@ async function saveSetting(key){
   toast(key+' saved!');
 }
 
-// ── LEAD PANEL ──
+// ════════════════════════════════════════════════
+// COLLAPSIBLE LEAD PANEL
+// ════════════════════════════════════════════════
+function panelSection(title,icon,id,content,defaultOpen){
+  var open=defaultOpen!==false;
+  return'<div class="panel-section">'+
+    '<div class="panel-section-header" onclick="togglePanelSection(\''+id+'\')" id="psh-'+id+'">'+
+    '<div class="panel-section-title">'+icon+' '+title+'</div>'+
+    '<svg class="panel-section-chevron'+(open?' open':'')+'" id="psc-'+id+'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>'+
+    '</div>'+
+    '<div class="panel-section-body'+(open?'':' collapsed')+'" id="psb-'+id+'">'+content+'</div>'+
+  '</div>';
+}
+function togglePanelSection(id){
+  var body=document.getElementById('psb-'+id);
+  var chevron=document.getElementById('psc-'+id);
+  if(!body)return;
+  var isOpen=!body.classList.contains('collapsed');
+  if(isOpen){body.classList.add('collapsed');chevron.classList.remove('open');}
+  else{body.classList.remove('collapsed');chevron.classList.add('open');}
+}
+
 function openPanelById(leadId){
   var lead=APP.leadsCache.find(function(l){return l.id===leadId;});
   if(lead)openPanel(lead);
 }
+
 function openPanel(lead){
   APP.panelLead=lead;
   document.getElementById('panel-id').textContent=lead.lead_id;
   document.getElementById('panel-badge').innerHTML=statusBadge(lead.status);
 
-  // Reassign button in panel header (admin/principal only)
+  // Reassign button
   var reassignWrap=document.getElementById('panel-reassign-wrap');
   if(reassignWrap){
     if(isAdminOrPrincipal()){
-      reassignWrap.innerHTML='<button class="panel-reassign-btn" onclick="openReassignModal([\''+lead.id+'\'])" style="margin-top:6px">'+
-        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>'+
-        ' Reassign Teacher</button>';
-    }else{
-      reassignWrap.innerHTML='';
-    }
+      reassignWrap.innerHTML='<button class="panel-reassign-btn" onclick="openReassignModal([\''+lead.id+'\'])" style="margin-top:4px">'+
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'+
+        ' Reassign</button>';
+    }else{reassignWrap.innerHTML='';}
+  }
+
+  // Delete button (admin/principal only)
+  var deleteWrap=document.getElementById('panel-delete-wrap');
+  if(deleteWrap){
+    if(isAdminOrPrincipal()){
+      deleteWrap.innerHTML='<button class="btn btn-sm btn-red" onclick="openDeleteModal(\''+lead.id+'\')" title="Delete this lead">'+
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>'+
+        ' Delete</button>';
+    }else{deleteWrap.innerHTML='';}
   }
 
   var s=APP.settings||{};
   var statuses=s.statuses||['Inquiry','Interested','Visit Scheduled','Application','Fee Paid','Admitted','Dropped'];
   var canEdit=APP.profile.role==='teacher'?lead.teacher_id===APP.profile.id:true;
-  var fields=[
-    {label:'Student',value:lead.student_name},{label:'Parent',value:lead.parent_name},
-    {label:'Phone',value:lead.parent_phone},{label:'Alt Phone',value:lead.alt_phone||'—'},
-    {label:'Grade',value:lead.grade},{label:'Current School',value:lead.current_school},
-    {label:'Area',value:lead.area},{label:'Source',value:lead.source},
-    {label:'Date',value:fmtDate(lead.date)},
-    {label:'Teacher',value:lead.teacher_name||'—'}
+
+  // Section 1: Student Info
+  var studentFields=[
+    {label:'Student',value:lead.student_name},{label:'Grade',value:lead.grade},
+    {label:'Current School',value:lead.current_school}
   ];
-  var html='<div class="info-grid">';
-  fields.forEach(function(f){
-    html+='<div class="info-cell"><div class="info-cell-label">'+f.label+'</div><div class="info-cell-value">'+(f.value||'—')+'</div></div>';
+  var studentHtml='<div class="info-grid">';
+  studentFields.forEach(function(f){
+    studentHtml+='<div class="info-cell"><div class="info-cell-label">'+f.label+'</div><div class="info-cell-value">'+(f.value||'—')+'</div></div>';
   });
-  html+='</div>';
+  studentHtml+='</div>';
+
+  // Section 2: Contact
+  var contactFields=[
+    {label:'Parent',value:lead.parent_name},{label:'Phone',value:lead.parent_phone},
+    {label:'Alt Phone',value:lead.alt_phone||'—'},{label:'Area',value:lead.area}
+  ];
+  var contactHtml='<div class="info-grid">';
+  contactFields.forEach(function(f){
+    contactHtml+='<div class="info-cell"><div class="info-cell-label">'+f.label+'</div><div class="info-cell-value">'+(f.value||'—')+'</div></div>';
+  });
+  contactHtml+='</div>';
+
+  // Section 3: Lead Details
+  var ldFields=[
+    {label:'Source',value:lead.source},{label:'Date Added',value:fmtDate(lead.date)},
+    {label:'Teacher',value:lead.teacher_name||'—'},{label:'Lead ID',value:lead.lead_id}
+  ];
+  var ldHtml='<div class="info-grid">';
+  ldFields.forEach(function(f){
+    ldHtml+='<div class="info-cell"><div class="info-cell-label">'+f.label+'</div><div class="info-cell-value">'+(f.value||'—')+'</div></div>';
+  });
+  ldHtml+='</div>';
+
+  // Visit info
   if(lead.visit_date){
-    html+='<div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px">';
-    html+='<div style="font-weight:700;color:#1e40af;margin-bottom:4px">📅 Visit Scheduled</div>';
-    html+='<div style="color:#1e40af">'+fmtDate(lead.visit_date)+(lead.visit_time?' at '+lead.visit_time:'')+'</div></div>';
+    ldHtml+='<div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px">';
+    ldHtml+='<div style="font-weight:700;color:#1e40af;margin-bottom:2px">📅 Visit Scheduled</div>';
+    ldHtml+='<div style="color:#1e40af">'+fmtDate(lead.visit_date)+(lead.visit_time?' at '+lead.visit_time:'')+'</div></div>';
   }
+
+  // Section 4: Overdue warning
+  var isOD=isOverdue(lead.follow_up_date)&&lead.status!=='Admitted'&&lead.status!=='Dropped';
+  var overdueHtml='';
+  if(isOD){
+    var days=daysSinceOverdue(lead.follow_up_date);
+    overdueHtml='<div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">';
+    overdueHtml+='<div style="background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap">'+days+'d overdue</div>';
+    overdueHtml+='<div style="font-size:13px;color:#b91c1c;font-weight:600">Follow-up was due '+fmtDate(lead.follow_up_date)+'</div></div>';
+  }
+
+  // Section 5: Update (collapsible, open by default if canEdit)
+  var updateHtml='';
   if(canEdit){
     var statusOpts='';
     statuses.forEach(function(s2){statusOpts+='<option value="'+s2+'"'+(s2===lead.status?' selected':'')+'>'+s2+'</option>';});
-    html+='<div class="update-section"><div style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Update Lead</div>';
-    html+='<div class="form-group"><label>Status</label><select id="panel-status" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit;background:#fff" onchange="onPanelStatusChange(this.value)">'+statusOpts+'</select></div>';
-    html+='<div id="panel-visit-section" class="'+(lead.status==='Visit Scheduled'?'':'hidden')+'">';
-    html+='<div class="form-group"><label>Visit Date</label><input type="date" id="panel-visit-date" value="'+(lead.visit_date||'')+'" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit"></div>';
-    html+='<div class="form-group"><label>Time Slot</label><div class="slot-grid" id="panel-slot-grid"></div></div></div>';
-    html+='<div class="form-group"><label>Remarks</label><textarea id="panel-remarks" rows="3" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:12px 14px;font-size:14px;font-family:inherit;resize:none">'+(lead.remarks||'')+'</textarea></div>';
-    html+='<div class="form-group"><label>Follow-up Date '+(isOverdue(lead.follow_up_date)?'<span style="color:var(--red);font-size:11px;font-weight:700;margin-left:6px">OVERDUE</span>':'')+'</label>';
-    html+='<input type="date" id="panel-fu" value="'+(lead.follow_up_date||'')+'" style="width:100%;border:2px solid var(--gray-200);border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit"></div>';
-    html+='<button class="btn btn-orange" style="width:100%;padding:12px;font-size:14px" id="panel-save-btn" onclick="savePanel()">Save Changes</button></div>';
+    updateHtml=overdueHtml;
+    updateHtml+='<div class="form-group"><label style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Status</label>';
+    updateHtml+='<select id="panel-status" style="width:100%;border:2px solid var(--gray-200);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff" onchange="onPanelStatusChange(this.value)">'+statusOpts+'</select></div>';
+    updateHtml+='<div id="panel-visit-section" class="'+(lead.status==='Visit Scheduled'?'':'hidden')+'">';
+    updateHtml+='<div class="form-group"><label style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Visit Date</label><input type="date" id="panel-visit-date" value="'+(lead.visit_date||'')+'" style="width:100%;border:2px solid var(--gray-200);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit"></div>';
+    updateHtml+='<div class="form-group"><label style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Time Slot</label><div class="slot-grid" id="panel-slot-grid"></div></div></div>';
+    updateHtml+='<div class="form-group"><label style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Follow-up Date</label>';
+    updateHtml+='<input type="date" id="panel-fu" value="'+(lead.follow_up_date||'')+'" style="width:100%;border:2px solid var(--gray-200);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit"></div>';
+    updateHtml+='<div class="form-group"><label style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Remarks</label>';
+    updateHtml+='<textarea id="panel-remarks" rows="3" style="width:100%;border:2px solid var(--gray-200);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;resize:none">'+(lead.remarks||'')+'</textarea></div>';
+    updateHtml+='<button class="btn btn-orange" style="width:100%;padding:11px;font-size:14px" id="panel-save-btn" onclick="savePanel()">Save Changes</button>';
+  }else{
+    updateHtml='<p style="font-size:13px;color:var(--gray-500);text-align:center;padding:10px">You can only edit leads assigned to you.</p>';
   }
-  document.getElementById('panel-body').innerHTML=html;
+
+  var body=document.getElementById('panel-body');
+  body.innerHTML=
+    panelSection('Student','🎓','ps-student',studentHtml,true)+
+    panelSection('Contact','📞','ps-contact',contactHtml,true)+
+    panelSection('Lead Details','📋','ps-lead',ldHtml,false)+
+    (canEdit?panelSection('Update Lead','✏️','ps-update',updateHtml,true):panelSection('Info','ℹ️','ps-update',updateHtml,false));
+
   if(canEdit){
     APP.panelSelectedSlot=lead.visit_time||null;
     renderPanelSlotGrid(lead.visit_time);
   }
+
   document.getElementById('panel-overlay').style.display='block';
   document.getElementById('lead-panel').classList.add('open');
 }
@@ -2151,24 +2769,19 @@ function renderPanelSlotGrid(currentSlot){
   var grid=document.getElementById('panel-slot-grid');
   if(grid)grid.innerHTML=html;
 }
-
 function selectPanelSlot(btn,slot){
   document.querySelectorAll('#panel-slot-grid .slot-btn').forEach(function(b){b.classList.remove('selected');});
   btn.classList.add('selected');
   APP.panelSelectedSlot=slot;
 }
-
 function onPanelStatusChange(val){
   var sec=document.getElementById('panel-visit-section');
-  if(val==='Visit Scheduled'){sec.classList.remove('hidden');}
-  else{sec.classList.add('hidden');}
+  if(val==='Visit Scheduled'){sec.classList.remove('hidden');}else{sec.classList.add('hidden');}
 }
-
 function closePanel(){
   document.getElementById('lead-panel').classList.remove('open');
   document.getElementById('panel-overlay').style.display='none';
 }
-
 async function savePanel(){
   var lead=APP.panelLead;if(!lead)return;
   var statusEl=document.getElementById('panel-status');
@@ -2205,13 +2818,17 @@ async function savePanel(){
   if(btn){btn.textContent='Save Changes';btn.disabled=false;}
 }
 
-// ── KEYBOARD ──
+// ════════════════════════════════════════════════
+// KEYBOARD
+// ════════════════════════════════════════════════
 document.addEventListener('keydown',function(e){
   if(e.key==='Enter'&&!document.getElementById('page-login').classList.contains('hidden'))doLogin();
-  if(e.key==='Escape'){closePanel();closeAreaModal();closeVisitModal(true);closeBulkStatusModal();closeReassignModal();}
+  if(e.key==='Escape'){closePanel();closeAreaModal();closeVisitModal(true);closeBulkStatusModal();closeReassignModal();closeDeleteModal();closeAddUserModal();}
 });
 
-// ── START ──
+// ════════════════════════════════════════════════
+// START
+// ════════════════════════════════════════════════
 window.addEventListener('load',initApp);
 </script>
 </body>
